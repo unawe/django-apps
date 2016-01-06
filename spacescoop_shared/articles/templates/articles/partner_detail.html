@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load staticfiles thumbnail i18n %}
+
+{% block extra_js %}
+  {% include 'articles/article_list_component_js.html' %}
+{% endblock %}
+
+
+{% block content %}
+      <div class="row">
+        <div class="page-title">
+          <div class="section-title partner"><a href="{% url 'partners:list' %}">{% trans 'Partner' %}</a></div>
+          <div class="entry-title">
+          </div>
+        </div>
+      </div>
+      <div class="row partner-item">
+        <div class="col-md-12">
+          <a href="{{ object.url }}" class="logo" target="_blank"><img src="{% thumbnail object.logo.file 'original_news_source' subject_location=object.logo.file.subject_location %}"></a>
+          <div class="title">{{ object.name }}</div>
+          <div class="description">
+            {{ object.description|safe }}
+          </div>
+        </div>
+      </div>
+    {% with object.articles.all|slice:':20' as object_list %} <!-- TODO: remove limit, load by AJAX or paginate -->
+      {% include 'articles/article_list_component.html' %}
+    {% endwith %}
+      <div class="buffer"></div>
+{% endblock %}

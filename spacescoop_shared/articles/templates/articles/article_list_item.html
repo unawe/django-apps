@@ -1,0 +1,19 @@
+{% load thumbnail %}
+
+          <div class="grid-item">
+            <div class="categories">
+              {% for category in object.categories.all %}
+                {% include 'articles/category_inline_icon.html' with category=category do_link=False %}
+              {% endfor %}
+            </div>
+      {% if object.main_visual %}
+            <a href="{% url 'articles:detail' code=object.code slug=object.slug %}">
+              <!-- <img src="{% thumbnail object.main_visual.file 'article_thumb' subject_location=object.main_visual.file.subject_location %}"/> -->
+        {% thumbnail object.main_visual.file 'article_thumb' subject_location=object.main_visual.file.subject_location as thumb %}<img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" style="min-height: 200px; background-color: #4292B2;" />
+      {% endif %}
+            </a>
+            <div class="legend">
+              <div class="date">{{ object.release_date|date:"DATE_FORMAT" }}</div>
+              <div class="title"><a href="{% url 'articles:detail' code=object.code slug=object.slug %}">{{ object.title }}</a></div>
+            </div>
+          </div>
