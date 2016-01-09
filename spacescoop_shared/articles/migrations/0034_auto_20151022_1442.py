@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import filer.fields.image
+# import filer.fields.image
 import autoslug.fields
 
 
@@ -19,16 +19,16 @@ class Migration(migrations.Migration):
             field=autoslug.fields.AutoSlugField(populate_from='name', editable=False, default=''),
             preserve_default=False,
         ),
-        migrations.AlterField(
-            model_name='image',
-            name='file',
-            field=filer.fields.image.FilerImageField(related_name='+', to='filer.Image', blank=True, null=True),
-        ),
-        migrations.AlterField(
-            model_name='originalnewssource',
-            name='logo',
-            field=filer.fields.image.FilerImageField(related_name='+', to='filer.Image', blank=True, null=True),
-        ),
+        # migrations.AlterField(
+        #     model_name='image',
+        #     name='file',
+        #     field=filer.fields.image.FilerImageField(related_name='+', to='filer.Image', blank=True, null=True),
+        # ),
+        # migrations.AlterField(
+        #     model_name='originalnewssource',
+        #     name='logo',
+        #     field=filer.fields.image.FilerImageField(related_name='+', to='filer.Image', blank=True, null=True),
+        # ),
         migrations.AlterField(
             model_name='originalnewssource',
             name='name',

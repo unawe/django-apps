@@ -16,7 +16,9 @@
       </div>
       <div class="row partner-item">
         <div class="col-md-12">
-          <a href="{{ object.url }}" class="logo" target="_blank"><img src="{% thumbnail object.logo.file 'original_news_source' subject_location=object.logo.file.subject_location %}"></a>
+    {% thumbnail object.logo THUMBNAIL_ALIASES.original_news_source crop="center" as im %}
+          <a href="{{ object.url }}" class="logo" target="_blank"><img src="{{ im.url }}"></a>
+    {% endthumbnail %}
           <div class="title">{{ object.name }}</div>
           <div class="description">
             {{ object.description|safe }}

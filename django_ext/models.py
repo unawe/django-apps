@@ -27,16 +27,16 @@ class PublishingManager(models.Manager):
 
     # only return objects that .is_released
     _query_public = Q(published=True) & \
-            Q(release_date__lte=now) & \
-            (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
+        Q(release_date__lte=now) & \
+        (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
     # only return objects that .is_embargoed
     _query_embargoed = Q(published=True) & \
-            Q(release_date__gt=now) & \
-            (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
+        Q(release_date__gt=now) & \
+        (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
     # return objects that are either .is_released and .is_embargoed
     _query_embargo_view = Q(published=True) & \
-            (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
-    
+        (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
+
     # def get_queryset(self):
     #     return super().get_queryset().filter(self._query_public)
 
@@ -61,10 +61,8 @@ class PublishingManager(models.Manager):
 
 
 class PublishingModel(models.Model):
-    ''' 
-
-
-    IMPORTANT: inherit before other classes. 
+    '''
+    IMPORTANT: inherit before other classes.
     This is necessary when another parent class re-defines the default manager (objects) but was not designed to be cooperative.
     see https://rhettinger.wordpress.com/2011/05/26/super-considered-super/
     '''
@@ -95,13 +93,13 @@ class PublishingModel(models.Model):
             result.append('under embargo')
         return result
 
-    @classmethod 
+    @classmethod
     def sitemap(cls, priority=None):
         from django.contrib.sitemaps import GenericSitemap
         object_list = {
             'queryset': cls.objects.available(),  #TODO make sure this only shows _released objects
             'date_field': 'modification_date',
-        } 
+        }
         return GenericSitemap(object_list, priority=priority)
 
     class Meta:
@@ -131,7 +129,6 @@ class BaseAttachmentModel(models.Model):
     def __str__(self):
         return self.display_name()
 
-
     class Meta:
         abstract = True
         ordering = ['position', 'id']
@@ -139,10 +136,10 @@ class BaseAttachmentModel(models.Model):
 
 class MediaAttachedModel(models.Model):
 
-    #TODO: simplify media_key: make it a constant string property of the concrete class, and remove most of MediaAttachedModel ?
-    @classmethod 
-    def media_key(cls):
-        return str(cls._meta.verbose_name_plural)
+    # #TODO: simplify media_key: make it a constant string property of the concrete class, and remove most of MediaAttachedModel ?
+    # @classmethod
+    # def media_key(cls):
+    #     return str(cls._meta.verbose_name_plural)
 
     # def media_url(self, resource, ext):
     #     if self.main_visual:
@@ -157,13 +154,12 @@ class MediaAttachedModel(models.Model):
     #     else:
     #         return super().__getattribute__(name)
 
-
     @property
     def main_visual(self):
         result = None
         images = self.images.all()
         if images:
-            result = images[0]
+            result = images[0].file
         return result
 
     def image_list(self):

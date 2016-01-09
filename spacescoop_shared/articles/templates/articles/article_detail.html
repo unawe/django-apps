@@ -20,8 +20,10 @@
       </div>
 
       <div class="row">
-{% if object.main_visual %} {#% for img in object.images.all %#}
-        <img src="{% thumbnail object.main_visual.file 'article_cover' subject_location=object.main_visual.file.subject_location %}"/>
+{% if object.main_visual %} {#% for img in object.images.all %#} 
+    {% thumbnail object.main_visual THUMBNAIL_ALIASES.article_cover crop="center" as im %}
+        <img src="{{ im.url }}"/>
+    {% endthumbnail %}
 {% endif %}
       </div>
 
@@ -55,7 +57,9 @@
         </div>
         <div class="right">
   {% for n in object.originalnews_set.all %}<a target="_blank" href="{{n.original_news_source.url}}">
-          <img src="{% thumbnail n.original_news_source.logo 'original_news_source' %}" alt="{{n.original_news_source.name}}"/></a>
+    {% thumbnail n.original_news_source.logo THUMBNAIL_ALIASES.original_news_source crop="center" as im %}
+          <img src="{{ im.url }}" alt="{{n.original_news_source.name}}"/></a>
+    {% endthumbnail %}
   {% endfor %}
         </div>
 {% endif %}

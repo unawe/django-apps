@@ -1,8 +1,9 @@
 {% load thumbnail %}
 {% for object in object_list %}
-  {% thumbnail object.main_visual.file 'article_thumb_inline' subject_location=object.main_visual.file.subject_location as thumb %}
+  {% thumbnail object.main_visual THUMBNAIL_ALIASES.article_thumb_inline crop="center" as thumb %}
     <div class="col-md-4 inline-scoop">
       <a href="{% url 'articles:detail' code=object.code slug=object.slug %}"><img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" /></a>
       <div class="legend"><div class="title"><a href="{% url 'articles:detail' code=object.code slug=object.slug %}">{{ object.title }}</a></div></div>
     </div>
+  {% endthumbnail %}
 {% endfor %}

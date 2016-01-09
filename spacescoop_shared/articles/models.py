@@ -1,6 +1,6 @@
 # from datetime import datetime
-# import uuid
-# import os
+import uuid
+import os
 import re
 
 from django.db import models
@@ -18,7 +18,7 @@ from parler.managers import TranslatableManager, TranslatableQuerySet
 # from taggit.models import TagBase, GenericTaggedItemBase
 from taggit_autosuggest.managers import TaggableManager
 from ckeditor.fields import RichTextField
-from filer.fields.image import FilerImageField
+from sorl.thumbnail import ImageField
 from autoslug import AutoSlugField
 
 from django_ext.models import PublishingModel, PublishingManager, MediaAttachedModel, BaseAttachmentModel
@@ -81,7 +81,7 @@ class OriginalNewsSource(TranslatableModel):
     slug = models.SlugField(max_length=200, help_text='The Slug must be unique, and closely match the title for better SEO; it is used as part of the URL.', )
     fullname = models.CharField(max_length=200, blank=True, help_text='If set, the full name will be used in some places instead of the name', )
     url = models.CharField(max_length=255)
-    logo = FilerImageField(null=True, blank=True, related_name='+')
+    logo = ImageField(null=True, blank=True, upload_to='partners')
     article_count = models.IntegerField(default=0, editable=False, )
 
     def title(self):
@@ -128,7 +128,7 @@ class ArticleManager(PublishingManager, TranslatableManager):
 
 class Article(TranslatableModel, PublishingModel, MediaAttachedModel):
 
-    # uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=4, blank=False, db_index=True, help_text='The 4 digit code that identifies the Article, in the format "YY##": year, folowed by sequential number.')
     categories = models.ManyToManyField(Category, related_name='articles', limit_choices_to={'translations__language_code': 'en'})
     original_news = models.ManyToManyField(OriginalNewsSource, through='OriginalNews', related_name='articles', )
@@ -211,7 +211,7 @@ class Article(TranslatableModel, PublishingModel, MediaAttachedModel):
         qs = qs.prefetch_related('%stranslations' % prefix)
         qs = qs.prefetch_related('%scategories' % prefix)
         qs = qs.prefetch_related('%scategories__translations' % prefix)
-        qs = qs.prefetch_related('%simages__file' % prefix)
+        qs = qs.prefetch_related('%simages' % prefix)
         return qs
 
     def __str__(self):
@@ -254,17 +254,17 @@ class ArticleTranslation(TranslatedFieldsModel):
 
 
 def get_file_path_article_attachment(instance, filename):
-    return None
+    return os.path.join('articles/attach', str(instance.hostmodel.uuid), filename)
 
 
-class Attachment(BaseAttachmentModel):
-    hostmodel = models.ForeignKey(Article)
-    file = models.FileField(blank=True, upload_to=get_file_path_article_attachment)
+# class Attachment(BaseAttachmentModel):
+#     hostmodel = models.ForeignKey(Article)
+#     file = models.FileField(blank=True, upload_to=get_file_path_article_attachment)
 
 
 class Image(BaseAttachmentModel):
     hostmodel = models.ForeignKey(Article, related_name='images')
-    file = FilerImageField(null=True, blank=True, related_name='+')
+    file = ImageField(null=True, blank=True, upload_to=get_file_path_article_attachment)
     # main_visual = models.BooleanField(default=False, help_text=_(u'The main visual is used as the cover image.'))
 
 

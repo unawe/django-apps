@@ -8,8 +8,9 @@
             </div>
       {% if object.main_visual %}
             <a href="{% url 'articles:detail' code=object.code slug=object.slug %}">
-              <!-- <img src="{% thumbnail object.main_visual.file 'article_thumb' subject_location=object.main_visual.file.subject_location %}"/> -->
-        {% thumbnail object.main_visual.file 'article_thumb' subject_location=object.main_visual.file.subject_location as thumb %}<img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" style="min-height: 200px; background-color: #4292B2;" />
+        {% thumbnail object.main_visual THUMBNAIL_ALIASES.article_thumb crop="center" as thumb %}
+        <img src="{{ thumb.url }}" width="{{ thumb.width }}" height="{{ thumb.height }}" />
+        {% endthumbnail %}
       {% endif %}
             </a>
             <div class="legend">

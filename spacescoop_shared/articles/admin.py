@@ -6,14 +6,15 @@ from parler.admin import TranslatableAdmin
 from parler.forms import TranslatableModelForm
 from parler.widgets import SortedCheckboxSelectMultiple
 # from parler.admin import SortedRelatedFieldListFilter
+from sorl.thumbnail.admin import AdminImageMixin
 
 # from django_ext.adminutils import download_csv
 
-from .models import Article, Image, Attachment, OriginalNewsSource, OriginalNews, Category, DEFAULT_TRANSLATION_CREDITS
+from .models import Article, Image, OriginalNewsSource, OriginalNews, Category, DEFAULT_TRANSLATION_CREDITS
 
 
 @admin.register(OriginalNewsSource)
-class OriginalNewsSourceAdmin(TranslatableAdmin):
+class OriginalNewsSourceAdmin(TranslatableAdmin, AdminImageMixin):
     def logo_embed(self, obj):
         if obj.logo:
             return '<img src="%s" style="height:50px" />' % obj.logo.image.icons['64']
@@ -79,9 +80,9 @@ class ArticleImageInline(admin.TabularInline):
     extra = 1
 
 
-class ArticleAttachmentInline(admin.TabularInline):
-    model = Attachment
-    fields = ('title', 'file', 'position', )
+# class ArticleAttachmentInline(admin.TabularInline):
+#     model = Attachment
+#     fields = ('title', 'file', 'position', )
 
 
 class ArticleAdminForm(TranslatableModelForm):
