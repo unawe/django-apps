@@ -17,18 +17,8 @@ class Migration(migrations.Migration):
             options={'verbose_name': 'partner translation'},
         ),
         migrations.AlterField(
-            model_name='image',
-            name='file',
-            field=sorl.thumbnail.fields.ImageField(blank=True, null=True, upload_to=''),
-        ),
-        migrations.AlterField(
             model_name='originalnewssource',
             name='fullname',
             field=models.CharField(max_length=200, blank=True, help_text='If set, the full name will be used in some places instead of the name'),
-        ),
-        migrations.AlterField(
-            model_name='originalnewssource',
-            name='logo',
-            field=sorl.thumbnail.fields.ImageField(blank=True, null=True, upload_to=''),
         ),
     ]
