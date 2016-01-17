@@ -10,7 +10,7 @@
     {% for object in object_list %}
       {% if forloop.counter0|divisibleby:4 %}</div> <div class="row category-list">{% endif %}
         <div class="col-md-3 category-entry">
-        {% include 'articles/category_inline_icon.html' with category=object %}
+        {% include 'spacescoops/category_inline_icon.html' with category=object %}
           <div class="legend">
             <div class="title"><a href="{% url 'categories:detail' slug=object.slug %}">{{ object.title }}</a></div>
           </div>

@@ -2,7 +2,7 @@
 {% load staticfiles thumbnail i18n %}
 
 {% block extra_js %}
-  {% include 'articles/article_list_component_js.html' %}
+  {% include 'spacescoops/article_list_component_js.html' %}
 {% endblock %}
 
 
@@ -26,7 +26,7 @@
         </div>
       </div>
     {% with object.articles.all|slice:':20' as object_list %} <!-- TODO: remove limit, load by AJAX or paginate -->
-      {% include 'articles/article_list_component.html' %}
+      {% include 'spacescoops/article_list_component.html' %}
     {% endwith %}
       <div class="buffer"></div>
 {% endblock %}

@@ -113,7 +113,7 @@ def _partner_query_set(request):
 
 
 class PartnerListView(ListView):
-    template_name = 'articles/partner_list.html'
+    template_name = 'spacescoops/partner_list.html'
     view_url_name = 'partners:list'
 
     def get_queryset(self):
@@ -122,7 +122,7 @@ class PartnerListView(ListView):
 
 
 class PartnerDetailView(DetailView):
-    template_name = 'articles/partner_detail.html'
+    template_name = 'spacescoops/partner_detail.html'
 
     def get_queryset(self):
         qs = _partner_query_set(self.request)
