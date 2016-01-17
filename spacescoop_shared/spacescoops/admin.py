@@ -101,7 +101,7 @@ class ArticleAdminForm(TranslatableModelForm):
 
     class Meta:
         model = Article
-        fields = ('code', 'title', 'release_date', 'published', 'featured', 'story', 'cool_fact', 'translation_credit_text', 'translation_credit_url', 'categories', 'tags', )
+        fields = ('code', 'title', 'release_date', 'published', 'featured', 'story', 'cool_fact', 'translation_credit_text', 'translation_credit_url', 'categories', 'spaceawe_category', 'tags', )
         widgets = {
             'categories': SortedCheckboxSelectMultiple,
             #TODO: django-parler seems to be replacing the default css class when Meta is defined...
@@ -166,7 +166,7 @@ class ArticleAdmin(TranslatableAdmin):
         ('Translation credits',
             {'fields': ('translation_credit_text', 'translation_credit_url', )}),
         (None,
-            {'fields': ('categories', 'tags', ), }),
+            {'fields': ('categories', 'spaceawe_category', 'tags', ), }),
     )
     readonly_fields = ('creation_date', 'modification_date', 'is_released', )
 

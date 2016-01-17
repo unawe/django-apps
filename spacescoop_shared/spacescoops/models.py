@@ -44,6 +44,13 @@ DEFAULT_TRANSLATION_CREDITS = {
     'vi': {'text': 'VietAstro biên dịch / Translated by VietAstro', 'url': 'http://www.vietastro.org'},
 }
 
+SPACEAWE_CATEGORY_CHOICES = (
+    ('space', 'Our wonderful Universe'),
+    ('planet', 'Our fragile planet'),
+    ('nav', 'Navigation through the ages'),
+    ('herit', 'Islamic heritage'),
+)
+
 
 class Category(TranslatableModel):
     position = models.IntegerField(default=0, )
@@ -131,6 +138,7 @@ class Article(TranslatableModel, PublishingModel, MediaAttachedModel):
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=4, blank=False, db_index=True, help_text='The 4 digit code that identifies the Article, in the format "YY##": year, folowed by sequential number.')
     categories = models.ManyToManyField(Category, related_name='articles', limit_choices_to={'translations__language_code': 'en'})
+    spaceawe_category = models.CharField(max_length=20, blank=True, choices=SPACEAWE_CATEGORY_CHOICES, )
     original_news = models.ManyToManyField(OriginalNewsSource, through='OriginalNews', related_name='articles', )
 
     objects = ArticleManager()
