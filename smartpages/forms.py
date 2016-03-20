@@ -7,9 +7,9 @@ from .models import SmartPage
 
 class SmartPageForm(TranslatableModelForm):
     url = forms.RegexField(
-        label=_("URL"), max_length=100, regex=r'^[-\w/\.~]+$',
-        help_text=_("Example: '/about/contact/'. Make sure to have leading and trailing slashes."),
-        error_messages={"invalid": _("This value must contain only letters, numbers, dots, underscores, dashes, slashes or tildes."), },
+        label='URL', max_length=100, regex=r'^[-\w/\.~]+$',
+        help_text="Example: '/about/contact/'. Make sure to have leading and trailing slashes.",
+        error_messages={"invalid": 'This value must contain only letters, numbers, dots, underscores, dashes, slashes or tildes.', },
     )
 
     class Meta:

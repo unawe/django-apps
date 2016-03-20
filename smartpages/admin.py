@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .forms import SmartPageForm
-from .models import SmartPage
+from .models import SmartPage, SmartEmbed
 from parler.admin import TranslatableAdmin
 
 # from django.utils.translation import ugettext_lazy as _
@@ -22,4 +22,15 @@ class SmartPageAdmin(TranslatableAdmin):
     list_display = ('title', 'all_languages_column', )
     # list_filter = ('sites', 'registration_required')
     search_fields = ('title', )
+    readonly_fields = ('code', )
+
+
+@admin.register(SmartEmbed)
+class SmartEmbedAdmin(TranslatableAdmin):
+    fieldsets = (
+        (None, {'fields': ('code', 'content', )}),
+    )
+    # list_display = ('id', 'code', 'all_languages_column', )
+    list_display = ('code', 'all_languages_column', )
+    # list_editable = ('code', )
     readonly_fields = ('code', )
