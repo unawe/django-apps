@@ -10,7 +10,7 @@
         </div>
       </div>
 {% for object in object_list %}
-  {% if object.articles.all|length > 0 %}
+  {% if object.spacescoop_count > 0 %}
       <div class="row partner-item">
         <div class="col-md-12">
           <a href="{{ object.url }}" class="logo" target="_blank">
@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="row">
-    {% include 'spacescoops/article_list_component_small.html' with object_list=object.articles.all|slice:':3' %}
+    {% include 'spacescoops/article_list_component_small.html' with object_list=object.scoops.all|slice:':3' %}
       </div>
       <div class="row">
         <div class="col-md-12 right">

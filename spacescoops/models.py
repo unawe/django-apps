@@ -3,6 +3,7 @@ import uuid
 import os
 import re
 
+from django.conf import settings
 from django.db import models
 # from django.conf import settings
 # from django.utils.timezone import now
@@ -21,8 +22,10 @@ from ckeditor.fields import RichTextField
 from sorl.thumbnail import ImageField
 from autoslug import AutoSlugField
 
-from django_ext.models import PublishingModel, PublishingManager, MediaAttachedModel, BaseAttachmentModel
+from django_ext.models import PublishingModel, PublishingManager, BaseAttachmentModel
 from glossary.models import Entry as GlossaryEntry
+from django_ext.models.spaceawe import SpaceaweModel
+from institutions.models import Institution
 from . import tasks
 
 # Space Scoop app settings
@@ -43,13 +46,6 @@ DEFAULT_TRANSLATION_CREDITS = {
     'si': {'text': 'Universe Awareness Sri Lanka', 'url': 'http://unawe-srilanka.blogspot.com'},
     'vi': {'text': 'VietAstro biên dịch / Translated by VietAstro', 'url': 'http://www.vietastro.org'},
 }
-
-SPACEAWE_CATEGORY_CHOICES = (
-    ('space', 'Our wonderful Universe'),
-    ('planet', 'Our fragile planet'),
-    ('nav', 'Navigation through the ages'),
-    ('herit', 'Islamic heritage'),
-)
 
 
 class Category(TranslatableModel):
@@ -133,13 +129,12 @@ class ArticleManager(PublishingManager, TranslatableManager):
 #     tag = models.ForeignKey(LowerCaseTag, related_name="tagged_items")
 
 
-class Article(TranslatableModel, PublishingModel, MediaAttachedModel):
+class Article(TranslatableModel, PublishingModel, SpaceaweModel):
 
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=4, blank=False, db_index=True, help_text='The 4 digit code that identifies the Article, in the format "YY##": year, folowed by sequential number.')
-    categories = models.ManyToManyField(Category, related_name='articles', limit_choices_to={'translations__language_code': 'en'})
-    spaceawe_category = models.CharField(max_length=20, blank=True, choices=SPACEAWE_CATEGORY_CHOICES, )
-    original_news = models.ManyToManyField(OriginalNewsSource, through='OriginalNews', related_name='articles', )
+    categories = models.ManyToManyField(Category, blank=True, related_name='articles', limit_choices_to={'translations__language_code': 'en'})
+    original_news = models.ManyToManyField(Institution, through='OriginalNews', related_name='scoops', )
 
     objects = ArticleManager()
     # tags = TaggableManager(blank=True, through=LowerCaseTaggedItem)
@@ -147,10 +142,18 @@ class Article(TranslatableModel, PublishingModel, MediaAttachedModel):
     # available = PublishingManager()
 
     @property
+    def main_visual(self):
+        result = None
+        images = self.images.all()
+        if images:
+            result = images[0].file
+        return result
+
+    @property
     def translated_credit(self):
         result = ''
         if self.translation_credit_text and self.translation_credit_url:
-            result = u'<a href="%s">%s</a>' % (self.translation_credit_url, self.translation_credit_text)
+            result = '<a href="%s">%s</a>' % (self.translation_credit_url, self.translation_credit_text)
         elif self.translation_credit_text:
             result = self.translation_credit_text
         elif self.translation_credit_url:
@@ -226,10 +229,10 @@ class Article(TranslatableModel, PublishingModel, MediaAttachedModel):
         return self.code + ': ' + self.title
 
     def get_absolute_url(self):
-        return reverse('articles:detail', kwargs={'code': self.code, 'slug': self.slug, })
+        return reverse('scoops:detail', kwargs={'code': self.code, 'slug': self.slug, })
 
     class Meta(PublishingModel.Meta):
-        pass
+        verbose_name = 'space scoop'
 
     # class PublishingMeta(PublishingModel.PublishingMeta):
     #     permission_all = publishing_login_required()
@@ -273,12 +276,12 @@ def get_file_path_article_attachment(instance, filename):
 class Image(BaseAttachmentModel):
     hostmodel = models.ForeignKey(Article, related_name='images')
     file = ImageField(null=True, blank=True, upload_to=get_file_path_article_attachment)
-    # main_visual = models.BooleanField(default=False, help_text=_(u'The main visual is used as the cover image.'))
+    # main_visual = models.BooleanField(default=False, help_text='The main visual is used as the cover image.')
 
 
 class OriginalNews(models.Model):
     article = models.ForeignKey(Article)
-    original_news_source = models.ForeignKey(OriginalNewsSource)
+    institution = models.ForeignKey(Institution, null=True)
     url = models.CharField(max_length=255, verbose_name='URL')
 
     class Meta:

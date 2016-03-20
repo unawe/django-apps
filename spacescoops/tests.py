@@ -145,7 +145,7 @@ class ArticlesEmptyListViewTests(TestCase):
         '''
         If no items exist, an appropriate message should be displayed.
         '''
-        response = self.client.get(reverse('articles:list'))
+        response = self.client.get(reverse('scoops:list'))
         self.assertEqual(response.status_code, 200)
         self.assertQuerysetEqual(response.context['object_list'], [])
         self.assertContains(response, 'No articles are available.')

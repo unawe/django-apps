@@ -1,39 +1,39 @@
 import re
 
+from django.conf import settings
 from django.contrib import admin
 from django import forms
 from parler.admin import TranslatableAdmin
 from parler.forms import TranslatableModelForm
 from parler.widgets import SortedCheckboxSelectMultiple
 # from parler.admin import SortedRelatedFieldListFilter
-from sorl.thumbnail.admin import AdminImageMixin
 
 # from django_ext.adminutils import download_csv
 
-from .models import Article, Image, OriginalNewsSource, OriginalNews, Category, DEFAULT_TRANSLATION_CREDITS
+from .models import Article, Image, OriginalNews, Category, DEFAULT_TRANSLATION_CREDITS
 
 
-@admin.register(OriginalNewsSource)
-class OriginalNewsSourceAdmin(TranslatableAdmin, AdminImageMixin):
-    def logo_embed(self, obj):
-        if obj.logo:
-            return '<img src="%s" style="height:50px" />' % obj.logo.image.icons['64']
-    logo_embed.short_description = 'Logo'
-    logo_embed.allow_tags = True
+# @admin.register(OriginalNewsSource)
+# class OriginalNewsSourceAdmin(TranslatableAdmin, AdminImageMixin):
+#     def logo_embed(self, obj):
+#         if obj.logo:
+#             return '<img src="%s" style="height:50px" />' % obj.logo.image.icons['64']
+#     logo_embed.short_description = 'Logo'
+#     logo_embed.allow_tags = True
 
-    list_display = ('name', 'fullname', 'url', 'all_languages_column', ) #'logo_embed', ) #'admin_logo', )
-    list_editable = ('url', )
-    ordering = ('name', )
-    prepopulated_fields = {'slug': ('name', ), }
+#     list_display = ('name', 'fullname', 'url', 'all_languages_column', ) #'logo_embed', ) #'admin_logo', )
+#     list_editable = ('url', )
+#     ordering = ('name', )
+#     prepopulated_fields = {'slug': ('name', ), }
 
 
 class OriginalNewsInlineAdmin(admin.TabularInline):
     model = OriginalNews
-    fields = ('original_news_source', 'url', )
+    fields = ('institution', 'url', )
     extra = 1
 
 
-@admin.register(Category)
+# @admin.register(Category)
 class CategoryAdmin(TranslatableAdmin):
     list_display = ('title', 'all_languages_column', 'position', )
     list_editable = ('position', )
@@ -101,7 +101,8 @@ class ArticleAdminForm(TranslatableModelForm):
 
     class Meta:
         model = Article
-        fields = ('code', 'title', 'release_date', 'published', 'featured', 'story', 'cool_fact', 'translation_credit_text', 'translation_credit_url', 'categories', 'spaceawe_category', 'tags', )
+        fields = ['code', 'title', 'release_date', 'published', 'featured', 'story', 'cool_fact', 'translation_credit_text', 'translation_credit_url', ]
+
         widgets = {
             'categories': SortedCheckboxSelectMultiple,
             #TODO: django-parler seems to be replacing the default css class when Meta is defined...
@@ -116,7 +117,7 @@ def _admin_datetime_format(dt):
     return dt.strftime('%Y-%m-%d %H:%M:%S %Z') if dt else None
 
 
-@admin.register(Article)
+# @admin.register(Article)
 class ArticleAdmin(TranslatableAdmin):
 
     def get_queryset(self, request):
@@ -155,7 +156,7 @@ class ArticleAdmin(TranslatableAdmin):
         # ArticleAttachmentInline,
     )
 
-    fieldsets = (
+    fieldsets = [
         (None,
             {'fields': ('code', 'title', ), }),
         ('Publishing',
@@ -165,9 +166,7 @@ class ArticleAdmin(TranslatableAdmin):
             {'fields': ('story', 'cool_fact', ), }),
         ('Translation credits',
             {'fields': ('translation_credit_text', 'translation_credit_url', )}),
-        (None,
-            {'fields': ('categories', 'spaceawe_category', 'tags', ), }),
-    )
+    ]
     readonly_fields = ('creation_date', 'modification_date', 'is_released', )
 
     # def get_prepopulated_fields(self, request, obj=None):
@@ -176,3 +175,27 @@ class ArticleAdmin(TranslatableAdmin):
     #     return {
     #         'slug': ('title',)
     #     }
+
+
+if settings.SHORT_NAME == 'spacescoop':
+    ArticleAdminForm.Meta.fields += ['categories', 'tags']
+    ArticleAdmin.fieldsets.append(
+        (None,
+            {'fields': ('categories', 'tags', ), }),
+    )
+    admin.site.register(Category, CategoryAdmin)
+    admin.site.register(Article, ArticleAdmin)
+
+elif settings.SHORT_NAME == 'spaceawe':
+    ArticleAdminForm.Meta.fields += ['space', 'earth', 'navigation', 'heritage']
+    ArticleAdminForm.Meta.fields += ['categories']
+    ArticleAdmin.fieldsets.append(
+        ('Space Awareness Category',
+            {'fields': (('space', 'earth', 'navigation', 'heritage', ), ), }),
+    )
+    ArticleAdmin.fieldsets.append(
+        (None,
+            {'fields': ('categories', 'tags', ), }),
+    )
+    admin.site.register(Category, CategoryAdmin)
+    admin.site.register(Article, ArticleAdmin)

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import ckeditor.fields
-import spacescoop_shared.spacescoops.models
+import spacescoops.models
 import uuid
 import taggit_autosuggest.managers
 import autoslug.fields
@@ -77,7 +77,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(blank=True, max_length=255)),
                 ('show', models.BooleanField(verbose_name='Show', help_text='Include in attachment list.', default=False)),
                 ('position', models.PositiveSmallIntegerField(verbose_name='Position', help_text='Used to define the order of attachments in the attachment list.', default=0)),
-                ('file', sorl.thumbnail.fields.ImageField(upload_to=spacescoop_shared.spacescoops.models.get_file_path_article_attachment, blank=True, null=True)),
+                ('file', sorl.thumbnail.fields.ImageField(upload_to=spacescoops.models.get_file_path_article_attachment, blank=True, null=True)),
                 ('hostmodel', models.ForeignKey(to='spacescoops.Article', related_name='images')),
             ],
             options={

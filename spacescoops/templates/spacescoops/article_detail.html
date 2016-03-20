@@ -10,7 +10,7 @@
       <div class="row article-title">
         <div class="left">
           <div class="title">{{ object.title }}</div>
-          <div class="date">{{ object.release_date|date:"DATE_FORMAT"}}</div>          
+          <div class="date">{{ object.release_date|date:"DATE_FORMAT" }}</div>          
         </div>
         <div class="categories right">
           {% for category in object.categories.all %}
@@ -56,9 +56,9 @@
   {% endif %}
         </div>
         <div class="right">
-  {% for n in object.originalnews_set.all %}<a target="_blank" href="{{n.original_news_source.url}}">
+  {% for n in object.originalnews_set.all %}
     {% thumbnail n.original_news_source.logo THUMBNAIL_ALIASES.original_news_source crop="center" as im %}
-          <img src="{{ im.url }}" alt="{{n.original_news_source.name}}"/></a>
+          <a target="_blank" href="{{ n.original_news_source.url }}"><img src="{{ im.url }}" alt="{{ n.original_news_source.name }}"/></a>
     {% endthumbnail %}
   {% endfor %}
         </div>

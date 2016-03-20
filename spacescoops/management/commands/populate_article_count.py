@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from ...tasks import populate_article_count
+from spacescoops.tasks import populate_article_count
 
 
 class Command(BaseCommand):
