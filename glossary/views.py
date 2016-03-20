@@ -4,7 +4,7 @@ from parler.views import TranslatableSlugMixin
 from .models import Entry
 
 
-def _entry_query_set(qs, only_translations=True):
+def _entry_queryset(qs, only_translations=True):
     if only_translations:
         qs = qs.active_translations()
     qs = qs.prefetch_related('translations')
@@ -17,7 +17,7 @@ class EntryListView(ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.order_by('translations__title')
-        return _entry_query_set(qs)
+        return _entry_queryset(qs)
 
 
 class EntryDetailView(TranslatableSlugMixin, DetailView):
@@ -27,4 +27,4 @@ class EntryDetailView(TranslatableSlugMixin, DetailView):
         return [self.get_language(), 'en']  # TODO: nasty hack!
 
     def get_queryset(self):
-        return _entry_query_set(super().get_queryset(), only_translations=False)
+        return _entry_queryset(super().get_queryset(), only_translations=False)

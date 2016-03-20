@@ -1,6 +1,7 @@
 from django.contrib import admin
 from parler.admin import TranslatableAdmin, TranslatableModelForm 
 # from contrib.remainingcharacters.admin import CounterAdmin
+from django.conf import settings
 from django import forms
 
 from .models import Entry
@@ -56,4 +57,6 @@ class EntryAdmin(TranslatableAdmin):
             'js/jquery.charCount.js',
         )
 
-admin.site.register(Entry, EntryAdmin)
+
+if settings.SHORT_NAME == 'spacescoop':
+    admin.site.register(Entry, EntryAdmin)
