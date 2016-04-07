@@ -49,16 +49,16 @@
         <div class="text left">
   {% if object.originalnews_set.all|length == 1 %}
           {% trans 'This Space Scoop is based on a Press Release from ' %}
-    {% with n=object.originalnews_set.all.0 %}<a target="_blank" href="{{n.url}}">{{n.original_news_source.name}}</a>{% endwith %}.
+    {% with n=object.originalnews_set.all.0 %}<a target="_blank" href="{{n.url}}">{{n.institution.name}}</a>{% endwith %}.
   {% elif object.originalnews_set.all|length > 1 %}
           {% trans 'This Space Scoop is based on Press Releases from ' %}
-    {% for n in object.originalnews_set.all %}<a target="_blank" href="{{n.url}}">{{n.original_news_source.name}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.
+    {% for n in object.originalnews_set.all %}<a target="_blank" href="{{n.url}}">{{n.institution.name}}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.
   {% endif %}
         </div>
         <div class="right">
   {% for n in object.originalnews_set.all %}
-    {% thumbnail n.original_news_source.logo THUMBNAIL_ALIASES.original_news_source crop="center" as im %}
-          <a target="_blank" href="{{ n.original_news_source.url }}"><img src="{{ im.url }}" alt="{{ n.original_news_source.name }}"/></a>
+    {% thumbnail n.institution.logo THUMBNAIL_ALIASES.original_news_source crop="center" as im %}
+          <a target="_blank" href="{{ n.institution.url }}"><img src="{{ im.url }}" alt="{{ n.institution.name }}"/></a>
     {% endthumbnail %}
   {% endfor %}
         </div>
