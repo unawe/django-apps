@@ -8,6 +8,7 @@ from django.views.generic import ListView, DetailView
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 from parler.views import TranslatableSlugMixin, ViewUrlMixin, FallbackLanguageResolved
+from django.contrib.syndication.views import Feed
 from django.utils.translation import ugettext as _
 
 from .models import Article, Category
@@ -71,7 +72,7 @@ class ArticleListView(ViewUrlMixin, ListView):
 
 class ArticleDetailView(DetailView):
     # model = Article
-    # template_name = 'articles/article_detail.html'
+    # template_name = 'spacescoops/article_detail.html'
     slug_field = 'code'
     slug_url_kwarg = 'code'
 
@@ -93,6 +94,26 @@ def detail_by_code(request, code):
     except Article.DoesNotExist:
         raise Http404(_('Article does not exist'))
     return redirect(obj, permanent=True)
+
+
+class ArticleFeed(Feed):
+    title = 'Space Scoop'
+    link = '/'
+    # link = reverse('scoops:list')
+    # description = ''
+
+    def items(self):
+        return Article.objects.available().translated()[:9]
+
+    def item_title(self, item):
+        return item.title
+
+    def item_description(self, item):
+        return item.story
+
+    # item_link is only needed if NewsItem has no get_absolute_url method.
+    def item_link(self, item):
+        return reverse('scoops:detail', kwargs={'code': item.code, 'slug': item.slug})
 
 
 def _category_queryset(request):

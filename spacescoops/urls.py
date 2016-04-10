@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.ArticleListView.as_view(), name='list'),
+    url(r'^feed/$', views.ArticleFeed(), name='feed'),
     url(r'^(?P<code>\d{4})/$', views.detail_by_code),
     url(r'^(?P<code>\d{4})/(?P<slug>.+)?/$', views.ArticleDetailView.as_view(), name='detail'),
 ]
