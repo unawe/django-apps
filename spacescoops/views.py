@@ -87,6 +87,10 @@ class ArticleDetailView(DetailView):
         return context
 
 
+class ArticleDetailPrintView(ArticleDetailView):
+    template_name = 'spacescoops/article_detail_print.html'
+
+
 def detail_by_code(request, code):
     'When only the code is provided, redirect to the canonical URL'
     try:
