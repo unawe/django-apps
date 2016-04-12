@@ -90,6 +90,10 @@ class ArticleDetailView(DetailView):
 class ArticleDetailPrintView(ArticleDetailView):
     template_name = 'spacescoops/article_detail_print.html'
 
+# def pdf(request, code):
+#     import pdb; pdb.set_trace()
+#     url = request.build_absolute_uri('../print-preview')
+#     return ''
 
 def detail_by_code(request, code):
     'When only the code is provided, redirect to the canonical URL'

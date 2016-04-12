@@ -7,7 +7,8 @@ urlpatterns = [
     url(r'^$', views.ArticleListView.as_view(), name='list'),
     url(r'^feed/$', views.ArticleFeed(), name='feed'),
     url(r'^(?P<code>\d{4})/$', views.detail_by_code),
-    url(r'^(?P<code>\d{4})/print/$', views.ArticleDetailPrintView.as_view(), name='print'),
+    url(r'^(?P<code>\d{4})/print-preview/$', views.ArticleDetailPrintView.as_view(), name='print-preview'),
+    # url(r'^(?P<code>\d{4})/print/$', views.pdf, name='print'),
     url(r'^(?P<code>\d{4})/(?P<slug>.+)?/$', views.ArticleDetailView.as_view(), name='detail'),
 ]
 

@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 
 from django.views.generic import ListView, DetailView
 from parler.views import TranslatableSlugMixin, ViewUrlMixin, FallbackLanguageResolved
+from django.contrib.syndication.views import Feed
 
 from spaceawe import misc
 from activities.models import Activity, Collection, ACTIVITY_SECTIONS, ACTIVITY_METADATA
@@ -92,11 +93,34 @@ class ActivityDetailView(DetailView):
         return context
 
 
+class ActivityDetailPrintView(ActivityDetailView):
+    template_name = 'activities/activity_detail_print.html'
+
+
 def detail_by_code(request, code):
     'When only the code is provided, redirect to the canonical URL'
     obj = _activity_queryset(request).get(code=code)
     return redirect(obj, permanent=True)
 
+
+class ActivityFeed(Feed):
+    title = 'Activities'
+    link = '/'
+    # link = reverse('scoops:list')
+    # description = ''
+
+    def items(self):
+        return Activity.objects.available().translated()[:9]
+
+    def item_title(self, item):
+        return item.title
+
+    def item_description(self, item):
+        return item.description
+
+    # item_link is only needed if NewsItem has no get_absolute_url method.
+    def item_link(self, item):
+        return reverse('activities:detail', kwargs={'code': item.code, 'slug': item.slug})
 
 # def collections_list(request):
 #     lst = get_list_or_404(Collection, user=request.user)

@@ -1,15 +1,26 @@
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
-from spacescoops.tasks import make_pdf
-from spacescoops.models import Article
+from spacescoops.utils import make_pdf
 
 
 class Command(BaseCommand):
-    help = 'Populates aggregate fields'
+    help = 'Generates PDF for the specified articles'
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('code', help='Four digit code (YYnn) of the article')
+        parser.add_argument('lang', help='Language of the article')
+
+        # Named (optional) arguments
+        parser.add_argument(
+            '--site-url',
+            action='store',
+            dest='site_url',
+            default=None,
+            help='Connect to a website other than %s' % settings.SITE_URL)
 
     def handle(self, *args, **options):
-        code = '1601'
-        lang = 'en'
-        assert(lang is not None)
-        obj = Article.objects.language(lang).get(code=code)
-        make_pdf(obj)
+        code = options['code']
+        lang = options['lang']
+        make_pdf(code, lang, site_url=options['site_url'])
