@@ -19,7 +19,6 @@ LANGUAGES = [code for (code, name) in settings.LANGUAGES]
 def make_pdf(code, lang, site_url=None):
     if not site_url:
         site_url = settings.SITE_URL
-    # import pdb; pdb.set_trace()
     if code == 'all':
         if lang == 'all':
             for baseobj in Article.objects.available():

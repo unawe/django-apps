@@ -47,7 +47,7 @@ def beautify_age_range(age_ranges):
 
 class UnsupportedMediaPathException(Exception):
     pass
-    
+
 
 def local_resource(uri):
     """
@@ -72,11 +72,11 @@ def local_resource(uri):
 #
 #     from_email = settings.DEFAULT_FROM_EMAIL
 #     to = 'rinoo7@gmail.com'
-#    
+#
 #     subject = 'test email'
 #     html_body = '<b>test</b> email'
 #     text_body = strip_tags( html_body )
-#    
+#
 #     # Send
 #
 #     if subject and html_body and from_email and to:
@@ -84,7 +84,7 @@ def local_resource(uri):
 #         msg = EmailMultiAlternatives( subject, text_body, from_email, [to] )
 #         msg.attach_alternative( html_body, 'text/html' )
 #         msg.send()
-#    
+#
 #     return
 
 

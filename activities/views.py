@@ -1,20 +1,12 @@
-from django.http import HttpResponse, Http404, HttpResponsePermanentRedirect
-from django.shortcuts import render
 from django.shortcuts import redirect
-from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from django.views.generic import ListView, DetailView
-from parler.views import TranslatableSlugMixin, ViewUrlMixin, FallbackLanguageResolved
+from parler.views import ViewUrlMixin
 from django.contrib.syndication.views import Feed
 
 from spaceawe import misc
 from activities.models import Activity, Collection, ACTIVITY_SECTIONS, ACTIVITY_METADATA
-
-
-# def list(request):
-#     lst = get_list_or_404(Activity, user=request.user, order_by='-release_date')
-#     return render(request, 'activities/list.html', {'object_list': lst, })
 
 
 def _activity_queryset(request, only_translations=True):
@@ -56,21 +48,6 @@ class ActivityListView(ViewUrlMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['page_template'] = self.page_template_name
         return context
-
-
-#
-# def detail(request, code, slug):
-#     obj = get_object_or_404(Activity, user=request.user, code=code)
-#     return render(request, 'activities/detail.html', {
-#             'object': obj,
-#             'sections': ACTIVITY_SECTIONS,
-#             'sections_meta': ACTIVITY_METADATA,
-#             'random': Activity.objects.available().order_by('?')[:3]
-#         })
-
-# def detail_by_code(request, code):
-#     obj = get_object_or_404(Activity, user=request.user, code=code)
-#     return HttpResponsePermanentRedirect(obj.get_absolute_url())
 
 
 class ActivityDetailView(DetailView):
@@ -122,13 +99,6 @@ class ActivityFeed(Feed):
     def item_link(self, item):
         return reverse('activities:detail', kwargs={'code': item.code, 'slug': item.slug})
 
-# def collections_list(request):
-#     lst = get_list_or_404(Collection, user=request.user)
-#     return render(request, 'collections/list.html', {'object_list': lst, })
-
-# def collections_detail(request, collection_slug):
-#     obj = get_object_or_404(Collection, user=request.user, slug=collection_slug)
-#     return render(request, 'collections/detail.html', {'object': obj})
 
 class CollectionListView(ViewUrlMixin, ListView):
     # template_name = 'collections/list.html'

@@ -1,11 +1,11 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-from spacescoops.compile import make_pdf
+from activities.compile import make_pdf
 
 
 class Command(BaseCommand):
-    help = 'Generates PDF for the specified articles'
+    help = 'Generates PDF for the specified activities'
 
     def add_arguments(self, parser):
         # Positional arguments
