@@ -4,8 +4,10 @@ from django.core.urlresolvers import reverse
 from django.views.generic import ListView, DetailView
 from parler.views import ViewUrlMixin
 from django.contrib.syndication.views import Feed
+from django.utils.translation import get_language
 
 from spaceawe import misc
+from .compile import get_pdf
 from activities.models import Activity, Collection, ACTIVITY_SECTIONS, ACTIVITY_METADATA
 
 
@@ -68,6 +70,15 @@ class ActivityDetailView(DetailView):
         # context['random'] = self.get_queryset(only_translations=True).order_by('?')[:3]
         context['random'] = misc.spaceawe_random_resources(self.object)
         return context
+
+    def get(self, request, *args, **kwargs):
+        fmt = request.GET.get('format')
+        if fmt == 'pdf':
+            code = kwargs[self.slug_url_kwarg]
+            url = get_pdf(code, get_language())
+            return redirect(url)
+        else:
+            return super().get(request, args, kwargs)
 
 
 class ActivityDetailPrintView(ActivityDetailView):
