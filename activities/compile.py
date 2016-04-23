@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 
 # from django.template import loader, Context, Template
 from django.conf import settings
@@ -13,6 +14,7 @@ from .models import Activity
 
 logger = logging.getLogger(__name__)
 OUT_PATH = os.path.join(settings.MEDIA_ROOT, 'activities', 'download')
+OUT_URL = os.path.join(settings.MEDIA_URL, 'activities', 'download')
 LANGUAGES = [code for (code, name) in settings.LANGUAGES]
 
 
@@ -41,12 +43,25 @@ def make_pdf(code, lang, site_url=None):
             generate_pdf(obj, site_url)
 
 
+def _get_filename(code, language_code, slug):
+    return 'activity-%s%s-%s.pdf' % (code, language_code, slug)
+
+
+def get_pdf(code, lang):
+    obj = Activity.objects.available().language(lang).get(code=code)
+    filename = _get_filename(obj.code, obj.language_code, obj.slug)
+    path = os.path.join(OUT_PATH, filename)
+    if not (os.path.exists(path) and os.path.getmtime(path) > time.mktime(obj.modification_date.timetuple())):
+        generate_pdf(obj, settings.SITE_URL)
+    return os.path.join(OUT_URL, filename)
+
+
 def generate_pdf(obj, site_url):
     print(obj.code, obj.language_code)
     activate(obj.language_code)
     url = site_url + reverse('activities:print-preview', kwargs={'code': obj.code, })
     print(obj.code, obj.language_code, url)
-    filename = 'activity-%s%s-%s.pdf' % (obj.code, obj.language_code, obj.slug)
+    filename = _get_filename(obj.code, obj.language_code, obj.slug)
     # template = loader.get_template('activities/activity_detail_print.html')
     # context = Context({'object': obj, })
     # text = template.render(context)

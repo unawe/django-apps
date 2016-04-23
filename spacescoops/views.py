@@ -10,8 +10,10 @@ from django.core.urlresolvers import reverse
 from parler.views import TranslatableSlugMixin, ViewUrlMixin, FallbackLanguageResolved
 from django.contrib.syndication.views import Feed
 from django.utils.translation import ugettext as _
+from django.utils.translation import get_language
 
 from .models import Article, Category
+from .compile import get_pdf
 from institutions.models import Institution
 
 # def index(request):
@@ -86,14 +88,19 @@ class ArticleDetailView(DetailView):
         context['random'] = self.get_queryset(only_translations=True).order_by('?')[:3]
         return context
 
+    def get(self, request, *args, **kwargs):
+        fmt = request.GET.get('format')
+        if fmt == 'pdf':
+            code = kwargs[self.slug_url_kwarg]
+            url = get_pdf(code, get_language())
+            return redirect(url)
+        else:
+            return super().get(request, args, kwargs)
+
 
 class ArticleDetailPrintView(ArticleDetailView):
     template_name = 'spacescoops/article_detail_print.html'
 
-# def pdf(request, code):
-#     import pdb; pdb.set_trace()
-#     url = request.build_absolute_uri('../print-preview')
-#     return ''
 
 def detail_by_code(request, code):
     'When only the code is provided, redirect to the canonical URL'
