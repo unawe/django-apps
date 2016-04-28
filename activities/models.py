@@ -211,7 +211,6 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel):  #,MediaAttac
         if filename.startswith('http') or filename.startswith('/'):
             result = filename
         else:
-            # assert(False)
             result = os.path.join(settings.MEDIA_URL, 'activities/attach', self.uuid, filename)
         return result
 

@@ -57,13 +57,10 @@ def get_pdf(code, lang):
 
 
 def generate_pdf(obj, site_url):
-    print(obj.code, obj.language_code)
+    # print(obj.code, obj.language_code)
     activate(obj.language_code)
     url = site_url + reverse('scoops:print-preview', kwargs={'code': obj.code, })
-    print(obj.code, obj.language_code, url)
+    # print(obj.code, obj.language_code, url)
     filename = _get_filename(obj.code, obj.language_code, obj.slug)
-    # template = loader.get_template('spacescoops/article_detail_print.html')
-    # context = Context({'object': obj, })
-    # text = template.render(context)
     text = url_read(url)
     HTML(string=text, base_url=site_url).write_pdf(os.path.join(OUT_PATH, filename))
