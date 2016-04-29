@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django import forms
+from django.conf import settings
 from parler.admin import TranslatableAdmin
 # from sorl.thumbnail.admin import AdminImageMixin
 
@@ -58,6 +59,28 @@ class PersonAdmin(admin.ModelAdmin):
     list_editable = ('citable_name', 'email', 'spaceawe_partner', 'spaceawe_node', )
 
 
+class LocationAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = Location
+        fields = ('city', 'country', 'latitude', 'longitude', )
+
+    def clean_latitude(self):
+        data = self.cleaned_data['latitude']
+        if settings.SHORT_NAME == 'spaceawe':
+            if not data:
+                raise forms.ValidationError('Please fill in the latitude (required for Space Awareness partners/nodes)')
+        return data
+
+    def clean_longitude(self):
+        data = self.cleaned_data['longitude']
+        if settings.SHORT_NAME == 'spaceawe':
+            if not data:
+                raise forms.ValidationError('Please fill in the longitude (required for Space Awareness partners/nodes)')
+        return data
+
+
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
+    form = LocationAdminForm
     list_display = ('city', 'country', 'latitude', 'longitude', )
