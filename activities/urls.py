@@ -15,4 +15,5 @@ urlpatterns = [
 if settings.SHORT_NAME == 'spaceawe':
     urlpatterns += [
         url(r'^category/(?P<category>\w+)/$', views.ActivityListView.as_view(), name='list_by_category'),
+        url(r'^level/(?P<level>\w+)/$', views.ActivityListView.as_view(), name='list_by_level'),
     ]

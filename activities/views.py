@@ -32,11 +32,17 @@ class ActivityListView(ViewUrlMixin, ListView):
         if 'category' in self.kwargs:
             category = self.kwargs['category']
             qs = qs.filter(**{category: True})
+        if 'level' in self.kwargs:
+            level = self.kwargs['level']
+            # qs = qs.filter(level__code__in=[level])
+            qs = qs.filter(level__code=level)
         return qs
 
     def get_view_url(self):
         if 'category' in self.kwargs:
             return reverse('activities:list_by_category', kwargs={'category': self.kwargs['category']})
+        elif 'level' in self.kwargs:
+            return reverse('activities:list_by_level', kwargs={'level': self.kwargs['level']})
         else:
             return super().get_view_url()
 
@@ -48,6 +54,7 @@ class ActivityListView(ViewUrlMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['sections_meta'] = ACTIVITY_METADATA
         context['page_template'] = self.page_template_name
         return context
 
