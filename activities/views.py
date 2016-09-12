@@ -56,6 +56,10 @@ class ActivityListView(ViewUrlMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['sections_meta'] = ACTIVITY_METADATA
         context['page_template'] = self.page_template_name
+        if 'category' in self.kwargs:
+            context['category'] = self.kwargs['category']
+        else:
+            context['category'] = ''
         return context
 
 
