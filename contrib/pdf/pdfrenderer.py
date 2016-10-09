@@ -168,7 +168,7 @@ class PdfRendererBase(object):
             for lang in langs:
                 self.font_overrides[lang] = name
 
-        # regsiter font family with reportlab
+        # register font family with reportlab
         if normal is None and bold is None and italic is None and boldItalic is None:
             raise ValueError('No font file was specified')
         if normal:
