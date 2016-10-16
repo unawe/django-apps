@@ -69,10 +69,7 @@ class ArticleListView(ViewUrlMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_template'] = self.page_template_name
-        if 'category' in self.kwargs:
-            context['category'] = self.kwargs['category']
-        else:
-            context['category'] = ''
+        context['category'] = self.kwargs.get('category', '')
         return context
 
 

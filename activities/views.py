@@ -56,10 +56,7 @@ class ActivityListView(ViewUrlMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['sections_meta'] = ACTIVITY_METADATA
         context['page_template'] = self.page_template_name
-        if 'category' in self.kwargs:
-            context['category'] = self.kwargs['category']
-        else:
-            context['category'] = ''
+        context['category'] = self.kwargs.get('category', '')
         return context
 
 
@@ -78,8 +75,12 @@ class ActivityDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         context['sections'] = ACTIVITY_SECTIONS
         context['sections_meta'] = ACTIVITY_METADATA
-        # context['random'] = self.get_queryset(only_translations=True).order_by('?')[:3]
-        context['random'] = misc.spaceawe_random_resources(self.object)
+        try:
+            import spaceawe
+            context['random'] = spaceawe.misc.spaceawe_random_resources(self.object)
+        except:
+            # context['random'] = self.get_queryset(only_translations=True).order_by('?')[:3]
+            pass
         return context
 
     def get(self, request, *args, **kwargs):
