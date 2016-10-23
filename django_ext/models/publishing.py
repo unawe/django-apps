@@ -21,21 +21,6 @@ def publishing_user_passes_test(test_func):
 
 class PublishingManager(models.Manager):
 
-    # only return objects that .is_released
-    _query_public = Q(published=True) & \
-        Q(release_date__lte=now) & \
-        (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
-    # only return objects that .is_embargoed
-    _query_embargoed = Q(published=True) & \
-        Q(release_date__gt=now) & \
-        (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
-    # return objects that are either .is_released and .is_embargoed
-    _query_embargo_view = Q(published=True) & \
-        (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now))
-
-    # def get_queryset(self):
-    #     return super().get_queryset().filter(self._query_public)
-
     def featured(self):
         return self.filter(featured=True).order_by('-release_date')
 
@@ -45,15 +30,27 @@ class PublishingManager(models.Manager):
         permission_all = self.model.PublishingMeta.permission_all
         permission_embargoed = self.model.PublishingMeta.permission_embargoed
         if permission_all and permission_all(user):
+            # retuen all objects
             result = super().get_queryset()
         elif permission_embargoed and permission_embargoed(user):
-            result = super().get_queryset().filter(self._query_embargo_view)
+            # return objects that are either .is_released and .is_embargoed
+            q = Q(published=True) & \
+                (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now()))
+            result = super().get_queryset().filter(q)
         else:
-            result = super().get_queryset().filter(self._query_public)
+            # only return objects that .is_released
+            q = Q(published=True) & \
+                Q(release_date__lte=now()) & \
+                (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now()))
+            result = super().get_queryset().filter(q)
         return result
 
     def embargoed(self):
-        return super().get_queryset().filter(self._query_embargoed)
+        # only return objects that .is_embargoed
+        q = Q(published=True) & \
+            Q(release_date__gt=now()) & \
+            (Q(embargo_date__isnull=True) | Q(embargo_date__lte=now()))
+        return super().get_queryset().filter(q)
 
 
 class PublishingModel(models.Model):
