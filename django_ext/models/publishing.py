@@ -22,7 +22,7 @@ def publishing_user_passes_test(test_func):
 class PublishingManager(models.Manager):
 
     def featured(self):
-        return self.filter(featured=True).order_by('-release_date')
+        return self.available().filter(featured=True).order_by('-release_date')
 
     # I wanted to make this the default Manager, but that's not compatible with django-parler:
     # the TranslatableManager has use_for_related_fields=True
