@@ -26,25 +26,34 @@ class ActivityListView(ViewUrlMixin, ListView):
     # model = Activity
     view_url_name = 'activities:list'
     # paginate_by = 10
+    all_categories = 'all'
 
     def get_queryset(self):
         qs = _activity_queryset(self.request)
-        if 'category' in self.kwargs:
+        # if category and level is selected, combine filters
+        if self.kwargs.get('category', self.all_categories) != self.all_categories and 'level' in self.kwargs:
+            category = self.kwargs['category']
+            level = self.kwargs['level']
+            qs = qs.filter(**{category: True}).filter(level__code=level)
+        # only for selected category without level
+        elif self.kwargs.get('category', self.all_categories) != self.all_categories:
             category = self.kwargs['category']
             qs = qs.filter(**{category: True})
-        if 'level' in self.kwargs:
+        # select level for all categories
+        elif 'level' in self.kwargs:
             level = self.kwargs['level']
             # qs = qs.filter(level__code__in=[level])
             qs = qs.filter(level__code=level)
         return qs
 
     def get_view_url(self):
-        if 'category' in self.kwargs:
-            return reverse('activities:list_by_category', kwargs={'category': self.kwargs['category']})
-        elif 'level' in self.kwargs:
-            return reverse('activities:list_by_level', kwargs={'level': self.kwargs['level']})
+        if 'level' in self.kwargs:
+            return reverse('activities:list_combine', kwargs={'category': self.kwargs.get('category', self.all_categories),
+                                                              'level' : self.kwargs['level']})
         else:
-            return super().get_view_url()
+            return reverse('activities:list_by_category', kwargs={'category': self.kwargs.get('category', self.all_categories)})
+
+        #    return super().get_view_url()
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -56,10 +65,11 @@ class ActivityListView(ViewUrlMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['sections_meta'] = ACTIVITY_METADATA
         context['page_template'] = self.page_template_name
+        context['all_categories'] = self.all_categories
         if 'category' in self.kwargs:
             context['category'] = self.kwargs['category']
         else:
-            context['category'] = ''
+            context['category'] = self.all_categories
         return context
 
 
