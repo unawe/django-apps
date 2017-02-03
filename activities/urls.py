@@ -8,6 +8,11 @@ urlpatterns = [
     url(r'^feed/$', views.ActivityFeed(), name='feed'),
     url(r'^(?P<code>\d{4})/$', views.detail_by_code),
     url(r'^(?P<code>\d{4})/print-preview/$', views.ActivityDetailPrintView.as_view(), name='print-preview'),
+
+    # for PDF generator I need first page separated from other pages
+    url(r'^(?P<code>\d{4})/first-page-print-preview/$', views.ActivityDetailFirstPagePrintView.as_view(), name='print-preview-header'),
+    url(r'^(?P<code>\d{4})/content-print-preview/$', views.ActivityDetailContentPrintView.as_view(), name='print-preview-content'),
+
     # url(r'^(?P<code>\d{4})/print/$', views.activity_pdf, name='print'),
     url(r'^(?P<code>\d{4})/(?P<slug>.+)?/$', views.ActivityDetailView.as_view(), name='detail'),
 ]

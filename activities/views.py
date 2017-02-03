@@ -106,6 +106,14 @@ class ActivityDetailPrintView(ActivityDetailView):
     template_name = 'activities/activity_detail_print.html'
 
 
+class ActivityDetailFirstPagePrintView(ActivityDetailView):
+    template_name = 'activities/activity_header_print_pdf_weasy.html'
+
+
+class ActivityDetailContentPrintView(ActivityDetailView):
+    template_name = 'activities/activity_content_print_pdf_weasy.html'
+
+
 def detail_by_code(request, code):
     'When only the code is provided, redirect to the canonical URL'
     obj = _activity_queryset(request).get(code=code)
