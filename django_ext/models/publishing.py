@@ -37,7 +37,7 @@ class PublishingManager(models.Manager):
     #     return super().get_queryset().filter(self._query_public)
 
     def featured(self):
-        return self.filter(featured=True).order_by('-release_date')
+        return self.filter(featured=True).filter(self._query_public).order_by('-release_date')
 
     # I wanted to make this the default Manager, but that's not compatible with django-parler:
     # the TranslatableManager has use_for_related_fields=True
