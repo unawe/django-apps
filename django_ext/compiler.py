@@ -7,7 +7,13 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import activate
 from weasyprint import HTML
 from contrib.urlfetch import url_read
+from urllib.parse import urljoin
 
+# import the logging library
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger('kokotko')
 
 LANGUAGES = [code for (code, name) in settings.LANGUAGES]
 
@@ -55,10 +61,22 @@ class PdfCompiler(object):
     #     return 'activity-%s%s-%s.pdf' % (code, language_code, slug)
 
     def generate_pdf(self, obj, site_url):
-        # print(obj.code, obj.language_code)
         activate(obj.language_code)
-        url = site_url + reverse(self.print_preview_urlpath, kwargs={'code': obj.code, })
-        # print(obj.code, obj.language_code, url)
+
+        # first page
+        header_url = urljoin(site_url,reverse('activities:print-preview-header', kwargs={'code': obj.code, }))
+        header_html_source = url_read(header_url)
+        header = HTML(string=header_html_source, base_url=site_url).render()
+
+        # other pages
+        content_url = urljoin(site_url, reverse('activities:print-preview-content', kwargs={'code': obj.code, }))
+        content_html_source = url_read(content_url)
+        content = HTML(string=content_html_source, base_url=site_url).render()
+
+        header.pages += content.pages
         filename = self.pdf_filename(obj)
-        text = url_read(url)
-        HTML(string=text, base_url=site_url).write_pdf(os.path.join(self.out_path, filename))
+
+        header.write_pdf(os.path.join(self.out_path, filename))
+
+
+

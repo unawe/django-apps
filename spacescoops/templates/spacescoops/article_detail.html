@@ -84,9 +84,26 @@
           <div class="share right"><div class="table-row">
             <div class="title">{% trans 'Share' %}</div>
             <div>
-              <img src="{% static 'img/social-share/twitter.svg' %}">
-              <img src="{% static 'img/social-share/pinterest.svg' %}">
-              <img src="{% static 'img/social-share/facebook.svg' %}">
+                <a href="https://twitter.com/intent/tweet?url={{ SITE_URL }}{{ object.get_absolute_url }}" target="_blank">
+                    <img src="{% static 'img/social-share/twitter.svg' %}">
+                </a>
+                {% if object.main_visual %}
+                <a href="http://pinterest.com/pin/create/button/?url={{ SITE_URL }}{{ object.get_absolute_url }}&description={{ object.title }}&media={{ SITE_URL }}{{ object.main_visual.url }}" class="pin-it-button" count-layout="horizontal" target="_blank">
+                    <img src="{% static 'img/social-share/pinterest.svg' %}">
+                </a>
+                {% endif %}
+
+                {% if object.main_visual %}
+                <a href="http://www.facebook.com/sharer/sharer.php?u={{ SITE_URL }}{{ object.get_absolute_url }}&image={{ SITE_URL }}{{ object.main_visual.url }}" target="_blank">
+                    <img src="{% static 'img/social-share/facebook.svg' %}">
+                </a>
+                {% else %}
+                <a href="http://www.facebook.com/sharer/sharer.php?u={{ SITE_URL }}{{ object.get_absolute_url }}" target="_blank">
+                    <img src="{% static 'img/social-share/facebook.svg' %}">
+                </a>
+                {% endif %}
+
+
             </div>
           </div></div>
         </div>
