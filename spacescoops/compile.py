@@ -25,4 +25,4 @@ def make_pdf(code, lang, site_url=None):
 
 
 def get_pdf(code, lang):
-    return compiler.get_pdf(code, lang)
+    return compiler.get_pdf(code, lang, 'scoops')
