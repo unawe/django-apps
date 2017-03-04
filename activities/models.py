@@ -315,7 +315,17 @@ class AuthorInstitution(models.Model):
     institution = models.ForeignKey(Institution)
 
     def display_name(self):
-        return self.author.name + ', ' + self.institution.name
+        # there were errors with no existing relations. Now display only relevant data
+        display = []
+        try:
+            display.append(self.author.name)
+        except:
+            pass
+        try:
+            display.append(self.institution.name)
+        except:
+            pass
+        return ', '. join(display)
 
     def __str__(self):
         return self.display_name()

@@ -7,7 +7,13 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import activate
 from weasyprint import HTML
 from contrib.urlfetch import url_read
+from urllib.parse import urljoin
 
+# import the logging library
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger('kokotko')
 
 LANGUAGES = [code for (code, name) in settings.LANGUAGES]
 
@@ -43,22 +49,53 @@ class PdfCompiler(object):
                 obj = self.clazz.objects.available().language(lang).get(code=code)
                 self.generate_pdf(obj, site_url)
 
-    def get_pdf(self, code, lang):
+    def get_pdf(self, code, lang, pdf_type):
+        """
+        :param code: id of text to generate
+        :param lang: language of PDF
+        :param pdf_type: type of pdf to generate. every type can has own templates.
+        :return: path to PDF
+        """
+
         obj = self.clazz.objects.available().language(lang).get(code=code)
         filename = self.pdf_filename(obj)
         path = os.path.join(self.out_path, filename)
         if not (os.path.exists(path) and os.path.getmtime(path) > time.mktime(obj.modification_date.timetuple())):
-            self.generate_pdf(obj, settings.SITE_URL)
+            if pdf_type == 'activities':
+                self.generate_activities_pdf(obj, settings.SITE_URL)
+            elif pdf_type == 'scoops':
+                self.generate_scoops_pdf(obj, settings.SITE_URL)
+            else:
+                raise Exception('type of PDF document is not set')
         return os.path.join(self.out_url, filename)
 
     # def pdf_filename(self, code, language_code, slug):
     #     return 'activity-%s%s-%s.pdf' % (code, language_code, slug)
 
-    def generate_pdf(self, obj, site_url):
-        # print(obj.code, obj.language_code)
+    def generate_activities_pdf(self, obj, site_url):
         activate(obj.language_code)
-        url = site_url + reverse(self.print_preview_urlpath, kwargs={'code': obj.code, })
-        # print(obj.code, obj.language_code, url)
+
+        # first page
+        header_url = urljoin(site_url,reverse('activities:print-preview-header', kwargs={'code': obj.code, }))
+        header_html_source = url_read(header_url)
+        header = HTML(string=header_html_source, base_url=site_url).render()
+
+        # other pages
+        content_url = urljoin(site_url, reverse('activities:print-preview-content', kwargs={'code': obj.code, }))
+        content_html_source = url_read(content_url)
+        content = HTML(string=content_html_source, base_url=site_url).render()
+
+        header.pages += content.pages
         filename = self.pdf_filename(obj)
-        text = url_read(url)
-        HTML(string=text, base_url=site_url).write_pdf(os.path.join(self.out_path, filename))
+
+        header.write_pdf(os.path.join(self.out_path, filename))
+
+    def generate_scoops_pdf(self, obj, site_url):
+        # first page
+        url = urljoin(site_url,reverse('scoops:print-preview', kwargs={'code': obj.code, }))
+        html_source = url_read(url)
+        header = HTML(string=html_source, base_url=site_url).render()
+
+        filename = self.pdf_filename(obj)
+
+        header.write_pdf(os.path.join(self.out_path, filename))
