@@ -4,10 +4,21 @@ from django.core.urlresolvers import get_script_prefix, reverse
 from django.utils.encoding import iri_to_uri
 
 from parler.models import TranslatableModel, TranslatedFieldsModel
+from parler.managers import TranslatableManager, TranslatableQuerySet
 from ckeditor.fields import RichTextField
 
+from django_ext.models import PublishingModel, PublishingManager
 
-class SmartPage(TranslatableModel):
+
+class SmartPageQuerySet(TranslatableQuerySet):
+    pass
+
+
+class SmartPageManager(PublishingManager, TranslatableManager):
+    queryset_class = SmartPageQuerySet
+
+
+class SmartPage(TranslatableModel, PublishingModel):
     code = models.CharField(unique=True, max_length=100, blank=True, db_index=True, help_text='Internal code to identify the page; if set, do not modify. When in doubt, leave empty.')
     # template_name = models.CharField(_('template name'), max_length=70, blank=True,
     #     help_text="Example: 'smartpages/contact_page.html'. If this isn't provided, the system will use 'smartpages/default.html'."
@@ -19,6 +30,8 @@ class SmartPage(TranslatableModel):
         default=False)
     creation_date = models.DateTimeField(auto_now_add=True, null=True)
     modification_date = models.DateTimeField(auto_now=True, null=True)
+
+    objects = SmartPageManager()
 
     class Meta:
         # ordering = ('translations__url',)
