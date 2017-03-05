@@ -11,9 +11,10 @@ from parler.views import TranslatableSlugMixin, ViewUrlMixin, FallbackLanguageRe
 from django.contrib.syndication.views import Feed
 from django.utils.translation import ugettext as _
 from django.utils.translation import get_language
+from django.conf import settings
 
 from .models import Article, Category
-from .compile import get_pdf
+from django_ext import compiler
 from institutions.models import Institution
 
 # def index(request):
@@ -91,9 +92,11 @@ class ArticleDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         fmt = request.GET.get('format')
-        if fmt == 'pdf':
+        if hasattr(settings, 'SPACESCOOP_DOWNLOADS') and fmt in settings.SPACESCOOP_DOWNLOADS['renderers'].keys():
             code = kwargs[self.slug_url_kwarg]
-            url = get_pdf(code, get_language())
+            url = compiler.get_generated_url(settings.SPACESCOOP_DOWNLOADS, fmt, code, lang=get_language())
+            if not url:
+                raise Http404
             return redirect(url)
         else:
             return super().get(request, args, kwargs)

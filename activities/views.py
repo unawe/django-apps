@@ -1,14 +1,15 @@
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
+from django.http import Http404
+from django.conf import settings
 
 from django.views.generic import ListView, DetailView
-from parler.views import ViewUrlMixin
+from parler.views import ViewUrlMixin, TranslatableSlugMixin
 from django.contrib.syndication.views import Feed
 from django.utils.translation import get_language
+from django_ext import compiler
 
-from spaceawe import misc
-from .compile import get_pdf
-from activities.models import Activity, Collection, ACTIVITY_SECTIONS, ACTIVITY_METADATA
+from .models import Activity, Collection, ACTIVITY_SECTIONS, ACTIVITY_METADATA
 
 
 def _activity_queryset(request, only_translations=True):
@@ -95,9 +96,11 @@ class ActivityDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         fmt = request.GET.get('format')
-        if fmt == 'pdf':
+        if hasattr(settings, 'ACTIVITY_DOWNLOADS') and fmt in settings.ACTIVITY_DOWNLOADS['renderers'].keys():
             code = kwargs[self.slug_url_kwarg]
-            url = get_pdf(code, get_language())
+            url = compiler.get_generated_url(settings.ACTIVITY_DOWNLOADS, fmt, code, lang=get_language())
+            if not url:
+                raise Http404
             return redirect(url)
         else:
             return super().get(request, args, kwargs)
@@ -121,6 +124,11 @@ def detail_by_code(request, code):
     return redirect(obj, permanent=True)
 
 
+class ActivityDetailBySlug(TranslatableSlugMixin, ActivityDetailView):
+    slug_field = 'slug'
+    slug_url_kwarg = 'slug'
+
+
 class ActivityFeed(Feed):
     title = 'Activities'
     link = '/'
@@ -142,15 +150,15 @@ class ActivityFeed(Feed):
 
 
 class CollectionListView(ViewUrlMixin, ListView):
-    # template_name = 'collections/list.html'
+    # template_name = 'activities/collection_list.html'
     # context_object_name = 'object_list'
     model = Collection
     view_url_name = 'collections:list'
     # paginate_by = 10
 
 
-class CollectionDetailView(DetailView):
-    # model = Collection
-    # template_name = 'collections/detail.html'
+class CollectionDetailView(TranslatableSlugMixin, DetailView):
+    model = Collection
+    # template_name = 'activities/collection_detail.html'
     # slug_field = 'slug'
     slug_url_kwarg = 'collection_slug'
