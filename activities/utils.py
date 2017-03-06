@@ -63,7 +63,7 @@ def local_resource(uri):
         raise UnsupportedMediaPathException('media urls must start with %s or %s' % (settings.MEDIA_URL, settings.STATIC_URL))
 
     # return path
-    return urllib.unquote(path), urllib.unquote(local)
+    return urllib.parse.unquote(path), urllib.parse.unquote(local)
 
 
 # def send_notification_mail():

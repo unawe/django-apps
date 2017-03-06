@@ -28,7 +28,7 @@ from activities.utils import bleach_clean
 
 # class RichtextAdmin(admin.ModelAdmin):
 #     # from django.db import models
-    
+
 #     # import django_markdown.widgets
 #     # formfield_overrides = {
 #     #     models.TextField: {'widget': django_markdown.widgets.MarkdownWidget()},
