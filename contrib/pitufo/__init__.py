@@ -27,31 +27,28 @@ STYLES = {
 
 PAGE_MAX_WITH = 8640
 
-
 class Document(list):
     meta = {}
     styles = copy.copy(STYLES)
 
     def write(self, f):
-        # f = ff.buffer
-        f.write(b'{\\rtf1\\ansi\n')
+        f.write('{\\rtf1\\ansi\n')
 
         if self.meta:
-            f.write(b'{\\info\n')
-            for key, value in self.meta.items():
-                start = b'{\\'
-                end = b'}'
+            f.write('{\\info\n')
+            for key, value in self.meta.iteritems():
+                start = '{\\'
+                end = '}'
                 if key not in ('title', 'subject', 'author', 'operator', 'keywords', 'comment', 'doccomm', ):
-                    start += b'*\\'
-                f.write(start + '{key} {value}'.format(key=key, value=_render_value(value)).encode() + end)
-            f.write(b'}\n')
+                    start += '*\\'
+                f.write(start + '{key} {value}'.format(key=key, value=_render_value(value)) + end)
+            f.write('}\n')
 
         for command in self:
             # print(command.render())
-            f.write(command.render(styles=self.styles).encode())
+            f.write(command.render(styles=self.styles))
 
-        f.write(b'}\n')
-        f.flush()
+        f.write('}\n')
 
 
 class Paragraph(object):
@@ -147,22 +144,11 @@ def _render_values(values):
 def _render_value(value):
     '''encodes unicode if needed, and interprets some basic HTML tags'''
 
-    if re.match(r'^<br\s?/?>$', value, flags=re.IGNORECASE):
+    if type(value) is bytes:
+        value = value.decode()
+
+    elif re.match(r'^<br\s?/?>$', value, flags=re.IGNORECASE):
         value = '\\line '
-
-    elif re.match(r'^<strong>$', value, flags=re.IGNORECASE):
-        value = '\\b '
-    elif re.match(r'^</strong>$', value, flags=re.IGNORECASE):
-        value = '\\b0 '
-    elif re.match(r'^<em>$', value, flags=re.IGNORECASE):
-        value = '\\i '
-    elif re.match(r'^</em>$', value, flags=re.IGNORECASE):
-        value = '\\i0 '
-    elif re.match(r'^<del>$', value, flags=re.IGNORECASE):
-        value = '\\strike '
-    elif re.match(r'^</del>$', value, flags=re.IGNORECASE):
-        value = '\\strike0 '
-
     elif re.match(r'^<sup>$', value, flags=re.IGNORECASE):
         value = '\\super '
     elif re.match(r'^<sub>$', value, flags=re.IGNORECASE):
@@ -170,28 +156,7 @@ def _render_value(value):
     elif re.match(r'^</su[pb]>$', value, flags=re.IGNORECASE):
         value = '\\nosupersub '
 
-#     def link(self, link, content):
-# #         result = []
-# #         result.append('{\\field{\\*\\fldinst HYPERLINK "%s"}{\\fldrslt ' % str(link))
-# #         if isinstance(content, str):
-# #             content = [content]
-# #         result += content
-# #         result.append('}}')
-# #         return result
-#     def link(self, link, content):
-#         if link != content:
-#             content += ' (%s)' % link
-#         return '<a href="%s">%s</a>' % (link, content)
-
-    elif re.match(r'^</su[pb]>$', value, flags=re.IGNORECASE):
-        value = '\\nosupersub '
-
     else:
-        if value.find('\\b') != -1:
-            print(value)
-        if value.find('<sub>') != -1:
-            print(value)
-
         value = value.encode('rtfunicode').decode()
     return value
 
