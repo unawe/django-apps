@@ -32,23 +32,24 @@ class Document(list):
     styles = copy.copy(STYLES)
 
     def write(self, f):
-        f.write('{\\rtf1\\ansi\n')
+        f.write(b'{\\rtf1\\ansi\n')
 
         if self.meta:
-            f.write('{\\info\n')
-            for key, value in self.meta.iteritems():
-                start = '{\\'
-                end = '}'
+            f.write(b'{\\info\n')
+            for key, value in self.meta.items():
+                start = b'{\\'
+                end = b'}'
                 if key not in ('title', 'subject', 'author', 'operator', 'keywords', 'comment', 'doccomm', ):
-                    start += '*\\'
-                f.write(start + '{key} {value}'.format(key=key, value=_render_value(value)) + end)
-            f.write('}\n')
+                    start += b'*\\'
+                f.write(start + '{key} {value}'.format(key=key, value=_render_value(value)).encode() + end)
+            f.write(b'}\n')
 
         for command in self:
             # print(command.render())
-            f.write(command.render(styles=self.styles))
+            f.write(command.render(styles=self.styles).encode())
 
-        f.write('}\n')
+        f.write(b'}\n')
+        f.flush()
 
 
 class Paragraph(object):
