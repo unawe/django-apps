@@ -4,7 +4,6 @@ import importlib
 
 # from django.template import loader, Context, Template
 from django.conf import settings
-from django.utils.translation import activate
 from django.core.management.base import BaseCommand
 
 # import the logging library
@@ -38,7 +37,6 @@ def get_generated_url(objdef, file_type, code, lang=None):
     model = get_python_thing(objdef['model'])
     if lang:
         obj = model.objects.available().language(lang).get(code=code)
-        activate(lang)  # required if called from command line ??? TODO: check
     else:
         obj = model.objects.available().get(code=code)
     filename = generate_one(objdef, obj, file_type)
