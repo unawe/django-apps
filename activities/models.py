@@ -128,6 +128,14 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel):  #,MediaAttac
         age_ranges = [obj.title for obj in self.age.all()]
         return utils.beautify_age_range(age_ranges)
 
+    def levels_joined(self):
+        levels = [obj.title for obj in self.level.all()]
+        return ', '.join(levels)
+
+    def skills_joined(self):
+        skills = [obj.title for obj in self.skills.all()]
+        return ', '.join(skills)
+
     def author_list(self):
         result = []
         for item in self.authors.all():
@@ -189,23 +197,6 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel):  #,MediaAttac
             if value:
                 result.append((meta_code, meta_title, value))
         return result
-
-    def download_key(self):
-        return self.slug + '-astroEDU-' + self.code
-
-    def zip_url(self):
-        return self.download_url('zip')
-    def pdf_url(self):
-        return self.download_url('pdf')
-    def epub_url(self):
-        return self.download_url('epub')
-    def rtf_url(self):
-        return self.download_url('rtf')
-
-    def download_url(self, resource):
-        return os.path.join(settings.MEDIA_URL, self.media_key(), 'download', self.download_key() + '.' + resource)
-    def download_path(self, resource):
-        return os.path.join(settings.MEDIA_ROOT, self.media_key(), 'download', self.download_key() + '.' + resource)
 
     def attachment_url(self, filename):
         if filename.startswith('http') or filename.startswith('/'):
@@ -269,46 +260,6 @@ class ActivityTranslation(TranslatedFieldsModel):
         )
 
 
-@receiver(pre_save, sender=Activity)
-def activity_pre_save(sender, instance, **kwargs):
-    if instance.pk:
-        old = Activity.objects.get(pk=instance.pk)
-        redirect_activity(old, instance)
-
-
-@receiver(post_save, sender=LogEntry)
-def activity_post_save_delayed(sender, **kwargs):
-    # The normal post_save signal is fired before the dependant objects are saved;
-    # so instead we are listening to LogEntry post_save
-    # In this case, we need the attachments to be up-to-date
-    logentry = kwargs['instance']
-    ct = ContentType.objects.get_for_model(Activity)
-    if ct.id == logentry.content_type.id:
-        instance = logentry.get_edited_object()
-        # tasks.make_thumbnail.delay(instance)
-        # tasks.zip_attachments.delay(instance)
-        # tasks.make_epub.delay(instance)
-        # tasks.make_pdf.delay(instance)
-        # tasks.make_rtf.delay(instance)
-
-
-def redirect_activity(old, new):
-    if old.slug != new.slug:
-        pass
-        # current_site = Site.objects.get_current()
-
-        # # new redirect
-        # r = Redirect()
-        # r.site = current_site
-        # r.old_path = old.get_absolute_url()
-        # r.new_path = new.get_absolute_url()
-        # r.save()
-
-        # #update any old redirects
-        # for r in Redirect.objects.filter(new_path=old.get_absolute_url()):
-        #     r.new_path = new.get_absolute_url()
-
-
 class AuthorInstitution(models.Model):
     activity = models.ForeignKey(Activity, related_name='authors', )
     author = models.ForeignKey(Person)
@@ -352,6 +303,14 @@ class Attachment(models.Model):
         ordering = ['-show', 'position', 'id']
 
 
+class CollectionQuerySet(TranslatableQuerySet):
+    pass
+
+
+class CollectionManager(PublishingManager, TranslatableManager):
+    queryset_class = CollectionQuerySet
+
+
 class Collection(TranslatableModel, PublishingModel):
     activities = models.ManyToManyField(Activity, related_name='+', )
     # image = models.ForeignKey(ManagedFile, null=True)
@@ -359,6 +318,8 @@ class Collection(TranslatableModel, PublishingModel):
 
     creation_date = models.DateTimeField(auto_now_add=True, null=True)
     modification_date = models.DateTimeField(auto_now=True, null=True)
+
+    objects = CollectionManager()
 
     @property
     def code(self):
