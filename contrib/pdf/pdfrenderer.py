@@ -19,7 +19,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 class Styles(StyleSheet1):
     lang = 'en'
     font_overrides = {}
-    
+
     def add(self, style):
         if self.lang in self.font_overrides:
             style.fontName = self.font_overrides[self.lang]
@@ -157,7 +157,7 @@ class PdfRendererBase(object):
         # path = os.path.join(self.destfolder, '%s.%s' % (obj.id, self.file_ext))
         # if not self.overwrite and os.path.exists(path):
         #     return
-        f = open(path, 'w')
+        f = open(path, 'wb')
         self.render(obj, f)
         f.close()
 
@@ -188,7 +188,7 @@ class PdfRendererBase(object):
 
 class AweImage(Image):
     '''PPI-aware image (knows its proper size)'''
-    
+
     def __init__(self, renderer, pathname, maxwidth=None, **kwargs):
         Image.__init__(self, pathname, **kwargs)
         self.renderer = renderer

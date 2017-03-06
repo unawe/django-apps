@@ -5,16 +5,16 @@ from django.contrib import admin
 #have your ModelAdmin inherit this to use
 class CounterAdmin(admin.ModelAdmin):
     counted_fields = ()
-    
+
     #really for textareas
     max_lengths = {'abstract': 400,}
-    
+
     class Media:
         js = (
               'http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js',
               'js/jquery.charCount.js',
               )
-        
+
     def formfield_for_dbfield(self, db_field, **kwargs):
         field = super().formfield_for_dbfield(db_field, **kwargs)
         # print(db_field.name)

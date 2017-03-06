@@ -29,6 +29,7 @@ def render(folder, name):
 
     return html, result
 
+
 def listdir(folder):
     folder = os.path.join(root, folder)
     files = os.listdir(folder)
@@ -40,8 +41,10 @@ def listdir(folder):
 
 class MarkdownTest(TestCase):
     longMessage = True
+
     def setUp(self):
-        import django; django.setup()
+        from django.conf import settings
+        settings.configure()
 
     def test_markdown_extensions(self):
         folder, names = listdir('testdata')
@@ -49,5 +52,3 @@ class MarkdownTest(TestCase):
             # yield render, folder, key
             html, result = render(folder, key)
             self.assertEqual(html, result, key)
-
-

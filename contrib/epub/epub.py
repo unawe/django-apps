@@ -5,6 +5,7 @@ import re
 import zipfile
 import mimetypes
 import json
+import uuid
 
 if __name__ == '__main__':
     import utils
@@ -18,7 +19,7 @@ class Document(object):
 
     files = []
     metadata = {}
-    
+
     def __init__(self, file):
 
         #super().__init__(file, 'w') #, zipfile.ZIP_DEFLATED)
@@ -27,13 +28,13 @@ class Document(object):
         mimetypes.init()
 
         # The first file must be named "mimetype"
-        self.write_file('mimetype', 'application/epub+zip', zipfile.ZIP_STORED)
+        self.write_file('mimetype', 'application/epub+zip', compress_type=zipfile.ZIP_STORED)
 
-    def write_file(self, filename, content, encoding=None):
-        if encoding:
-            bytes = content.encode(encoding)
+    def write_file(self, filename, content, encoding='utf-8', compress_type=None):
+        if compress_type:
+            bytes = content.encode(encoding=encoding, compress_type=compress_type)
         else:
-            bytes = content
+            bytes = content.encode(encoding=encoding)
         self.epub.writestr(filename, bytes)
 
     def compile(self):
@@ -53,10 +54,10 @@ class Document(object):
             ext = os.path.splitext(name)[1].lower()
             mediatype = mimetypes.types_map[ext]
             file_id = 'file_%d' % (i+1)
-            
+
             # add file to manifest
             manifest += '    <item id="%s" href="%s" media-type="%s"/>\n' % (file_id, name, mediatype)
-            
+
             # add file to spine and toc
             # print(name, mediatype)
             if mediatype in ['application/xhtml+xml', 'text/html']:
@@ -66,7 +67,7 @@ class Document(object):
                     spine += '    <itemref idref="%s" />\n' % file_id
                 if fullpath and not content:
                     with open(fullpath) as f:
-                        content = f.read(, 'utf-8')
+                        content = f.read()
                 title, level = utils.extract_title(content)
                 #merged += extract_body(content)
                 if title:
@@ -80,7 +81,7 @@ class Document(object):
                     playorder += 1
                 # else:
                 #     print(name)
-        
+
             # cover?
             if mediatype.startswith('image/') and re.search('cover', name, re.IGNORECASE):
                 metadata['cover'] = file_id
@@ -93,13 +94,13 @@ class Document(object):
                     self.epub.write(fullpath, 'OEBPS/'+name)
                 else:
                     self.write_file('OEBPS/'+name, content)
-    
+
         manifest += '''    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />
         '''
-        if BUILD_TOC: 
+        if BUILD_TOC:
             manifest += '''    <item id="toc" href="toc.xhtml" media-type="application/xhtml+xml" />
         '''
-        
+
         ##############################
         # META-INF/container.xml
         self.write_file('META-INF/container.xml', u'''<?xml version="1.0" encoding="UTF-8"?>
@@ -108,7 +109,7 @@ class Document(object):
             <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
           </rootfiles>
         </container>''', 'utf-8')
-        
+
         ##############################
         # OEBPS/content.opf
         index_tpl = u'''<?xml version="1.0" encoding="UTF-8"?>
@@ -123,7 +124,7 @@ class Document(object):
         %(spine)s
           </spine>
         </package>'''
-        
+
         # book id and related metadata
         metadata['book_id_scheme'] = ''
         if 'book_id' not in metadata:
@@ -132,7 +133,7 @@ class Document(object):
             metadata['book_id_scheme'] = 'urn:uuid:'
         elif metadata['book_id_type'] == 'ISBN':
             metadata['book_id_scheme'] = 'urn:isbn:'
-            
+
         ##############################
         # metadata
         metadata_tpl = u'''    <dc:title>%(title)s</dc:title>
@@ -142,16 +143,16 @@ class Document(object):
             <meta name="cover" content="%(cover)s" />
         '''
         metadata_opt = {
-            'language' : '    <dc:language xsi:type="dcterms:RFC3066">%(language)s</dc:language>\n',
-            'dublincore' : '    <%(key)s>%(value)s</%(key)s>\n',
+            'language': '    <dc:language xsi:type="dcterms:RFC3066">%(language)s</dc:language>\n',
+            'dublincore': '    <%(key)s>%(value)s</%(key)s>\n',
         }
-        
+
         ##############################
         # OEBPS/toc.ncx
         toc_tpl = u'''<?xml version="1.0" encoding="UTF-8"?>
         <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
         %(toc_metadata)s
-          
+
           <navMap>
         %(navmap)s
           </navMap>
@@ -162,11 +163,11 @@ class Document(object):
             <meta name="dtb:totalPageCount" content="0"/>
             <meta name="dtb:maxPageNumber" content="0"/>
           </head>
-          
+
           <docTitle><text>%(title)s</text></docTitle>
           <docAuthor><text>%(author)s</text></docAuthor>
         '''
-        
+
         # Write the index
         metadata_text = metadata_tpl % metadata
         if metadata['language']:
@@ -174,14 +175,14 @@ class Document(object):
         for (k, v) in metadata.items():
             if k.startswith('dc:') or k.startswith('dcterms:'):
                 metadata_text += metadata_opt['dublincore'] % {'key': k, 'value': v, }
-        
+
         index_text = index_tpl % {
           'metadata': metadata_text,
           'manifest': manifest,
           'spine': spine,
         }
         self.write_file('OEBPS/content.opf', index_text, 'utf-8')
-        
+
         # Write toc.ncx
         toc_metadata_text = toc_metadata_tpl % metadata
         metadata['navmap'] = navmap
@@ -190,11 +191,11 @@ class Document(object):
           'navmap': navmap,
         }
         self.write_file('OEBPS/toc.ncx', toc_text, 'utf-8')
-        
+
         #print toc_text
         #print json.dumps(toc)
         #print toc_ncx(toc)
-        
+
         # Write toc.xhtml
         if BUILD_TOC:
             toc_html = u'''<?xml version="1.0" encoding="utf-8"?>

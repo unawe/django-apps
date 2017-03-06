@@ -27,28 +27,31 @@ STYLES = {
 
 PAGE_MAX_WITH = 8640
 
+
 class Document(list):
     meta = {}
     styles = copy.copy(STYLES)
 
     def write(self, f):
-        f.write('{\\rtf1\\ansi\n')
-        
+        # f = ff.buffer
+        f.write(b'{\\rtf1\\ansi\n')
+
         if self.meta:
-            f.write('{\\info\n')
-            for key, value in self.meta.iteritems():
-                start = '{\\'
-                end = '}'
+            f.write(b'{\\info\n')
+            for key, value in self.meta.items():
+                start = b'{\\'
+                end = b'}'
                 if key not in ('title', 'subject', 'author', 'operator', 'keywords', 'comment', 'doccomm', ):
-                    start += '*\\'
-                f.write(start + '{key} {value}'.format(key=key, value=_render_value(value)) + end)
-            f.write('}\n')
+                    start += b'*\\'
+                f.write(start + '{key} {value}'.format(key=key, value=_render_value(value)).encode() + end)
+            f.write(b'}\n')
 
         for command in self:
             # print(command.render())
-            f.write(command.render(styles=self.styles))
-        
-        f.write('}\n')
+            f.write(command.render(styles=self.styles).encode())
+
+        f.write(b'}\n')
+        f.flush()
 
 
 class Paragraph(object):
@@ -61,7 +64,7 @@ class Paragraph(object):
         super().__init__()
 
     def render(self, styles):
-        content  = ''
+        content = ''
         for value in self.content:
             content += _render_value(value)
         return self.START.format(style=styles[self.style]) + content + self.END
@@ -103,7 +106,7 @@ class Table(list):
         col_width = PAGE_MAX_WITH / num_cols
         row_format = '\\trowd \\trqc\\trgaph108\\trrh280\n'
         for i in range(num_cols):
-            row_format += '\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\\cellx{0}\n'.format(col_width * (i+1))
+            row_format += '\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\\cellx{0}\n'.format(int(col_width * (i+1)))
         result = '\\pard\\plain\\par\n'
         for row in self:
             result += row_format
@@ -140,21 +143,61 @@ def _render_values(values):
         result += _render_value(value)
     return result
 
+
 def _render_value(value):
     '''encodes unicode if needed, and interprets some basic HTML tags'''
-    if isinstance(value, unicode):
-        value = value.encode('rtfunicode')
-    elif re.match(r'^<br\s?/?>$', value, flags=re.IGNORECASE):
+
+    if re.match(r'^<br\s?/?>$', value, flags=re.IGNORECASE):
         value = '\\line '
+
+    elif re.match(r'^<strong>$', value, flags=re.IGNORECASE):
+        value = '\\b '
+    elif re.match(r'^</strong>$', value, flags=re.IGNORECASE):
+        value = '\\b0 '
+    elif re.match(r'^<em>$', value, flags=re.IGNORECASE):
+        value = '\\i '
+    elif re.match(r'^</em>$', value, flags=re.IGNORECASE):
+        value = '\\i0 '
+    elif re.match(r'^<del>$', value, flags=re.IGNORECASE):
+        value = '\\strike '
+    elif re.match(r'^</del>$', value, flags=re.IGNORECASE):
+        value = '\\strike0 '
+
     elif re.match(r'^<sup>$', value, flags=re.IGNORECASE):
         value = '\\super '
     elif re.match(r'^<sub>$', value, flags=re.IGNORECASE):
         value = '\\sub '
     elif re.match(r'^</su[pb]>$', value, flags=re.IGNORECASE):
         value = '\\nosupersub '
+
+#     def link(self, link, content):
+# #         result = []
+# #         result.append('{\\field{\\*\\fldinst HYPERLINK "%s"}{\\fldrslt ' % str(link))
+# #         if isinstance(content, str):
+# #             content = [content]
+# #         result += content
+# #         result.append('}}')
+# #         return result
+#     def link(self, link, content):
+#         if link != content:
+#             content += ' (%s)' % link
+#         return '<a href="%s">%s</a>' % (link, content)
+
+    elif re.match(r'^</su[pb]>$', value, flags=re.IGNORECASE):
+        value = '\\nosupersub '
+
+    else:
+        if value.find('\\b') != -1:
+            print(value)
+        if value.find('<sub>') != -1:
+            print(value)
+
+        value = value.encode('rtfunicode').decode()
     return value
 
-def _render_image(filepath) :
+
+def _render_image(filepath):
+
     GOAL_FACTOR = 10  # default is 20 twips per pixel
 
     result = ['{\\pict']
@@ -170,7 +213,7 @@ def _render_image(filepath) :
             img_type = 'jpegblip'
             width, height = images._get_jpg_dimensions(f)
         else:
-            raise Exception('unkown image type: '+ extension)
+            raise Exception('unkown image type: ' + extension)
 
         # issue preamble, with image type and dimensoins
         goal_factor = min(GOAL_FACTOR, 1.0*PAGE_MAX_WITH/width)
@@ -181,8 +224,8 @@ def _render_image(filepath) :
         # dump the file in hex format
         f.seek(0, 0)
         image = hexlify(f.read())
-        for i in range(0, len(image), 128) :
-            result.append(image[i:i+128])
+        for i in range(0, len(image), 128):
+            result.append(image[i:i+128].decode())
 
     result.append('}')
     return '\n'.join(result)

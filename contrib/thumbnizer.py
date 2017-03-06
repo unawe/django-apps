@@ -213,7 +213,7 @@ def processimage(filename, newname, destdir, res):
 
     im = presize(im, sizes)
 
-    for (name, size) in sizes.iteritems():
+    for (name, size) in sizes.items():
         # print(name)
 
         # crop and resize

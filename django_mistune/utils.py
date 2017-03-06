@@ -68,29 +68,29 @@ class Flattener(object):
                 myrules, myval = self._parse(contents[0])
                 rules += [(name, myval)]
                 rules += myrules  # this will accomodate to images
-            
+
             elif name == 'list':
                 # body, ordered
                 self.list_level += 1
                 myrules, myval = self._parse(contents[0])
                 rules += myrules
                 self.list_level -= 1
-            
+
             elif name == 'list_item':
                 # text
                 myrules, myval = self._parse(contents[0])
-                if not myval and len(myrules) > 0 and  myrules[0][0] == 'paragraph':
+                if not myval and len(myrules) > 0 and myrules[0][0] == 'paragraph':
                     myval = myrules[0][1]
                     del myrules[0]
                 rules += [(name + '_%d' % self.list_level, myval)]
                 rules += myrules
-            
+
             elif name == 'header':
                 # text, level, raw
                 level = contents[1]
                 myrules, myval = self._parse(contents[0])
                 rules += [(name + '_%d' % level, myval)]
-            
+
             elif name == 'table':
                 # header, body
                 table_data = []
@@ -98,31 +98,31 @@ class Flattener(object):
                     myrules, myval = self._parse(table_row)
                     table_data += myrules
                 rules += [('table', table_data)]
-            
+
             elif name == 'table_row':
                 # content
                 myrules, myval = self._parse(contents[0])
                 rules += [myrules]
-            
+
             elif name == 'table_cell':
                 # content, **flags
                 myrules, myval = self._parse(contents[0])
                 fmt = item[2]
                 rules += [(myval, fmt)]
-            
+
             elif name == 'hrule':
                 rules += [('paragraph', '')]
 
             elif name in ['block_code', 'block_quote', 'block_html']:
                 print('Found %s in markdown' % name, _snippet(contents[0]))
 
-            
+
             elif name == 'image':
                 # src, title, alt_text
                 src = contents[0]
                 rules += [(name, src)]  # rules are block-level in the PDF
 
-            
+
             elif name == 'autolink':
                 # link, is_email
                 link = contents[0]
@@ -130,34 +130,34 @@ class Flattener(object):
                 if is_email:
                     link = 'mailto:%s' % link
                 value += self.link(link, contents[0])
-            
+
             elif name == 'codespan':
                 # text
                 print('Found codespan in markdown: ',  _snippet(contents[0]))
                 # value += ''
-            
+
             elif name == 'double_emphasis':
                 # text
                 value += self.double_emphasis(self._parse(contents[0])[1])
-            
+
             elif name == 'emphasis':
                 # text
                 value += self.emphasis(self._parse(contents[0])[1])
-            
+
             elif name == 'linebreak':
                 # print 'Found linebreak in markdown'
                 value += self.inline('<br/>')
-            
+
             elif name == 'newline':
                 # print 'Found newline in markdown'
                 value += self.inline('')
-            
+
             elif name == 'link':
                 # link, title, content
                 link = contents[0]
                 text = item[1][2]
                 value += self.link(link, self._parse(text)[1])
-            
+
             elif name == 'tag':
                 # html
                 html = contents[0]
@@ -165,15 +165,15 @@ class Flattener(object):
                     value += self.inline(str(html))
                 else:
                     print('Found unsupported tag in markdown: ', html)
-            
+
             elif name == 'strikethrough':
                 # text
                 value += self.strikethrough(self._parse(contents[0])[1])
-            
+
             elif name == 'text':
                 # text
                 value += self.inline(contents[0])
-            
+
             else:
                 print('Found unexpected element in parse tree: %s' % name)
                 raise Error(name)
@@ -249,12 +249,10 @@ class TreeRenderer(mistune.Renderer):
 
     def __getattribute__(self, name):
         '''Saves the arguments to each Markdown handling method.'''
-        found = TreeRenderer.__dict__.has_key(name)
+        found = name in TreeRenderer.__dict__
         if found:
             return object.__getattribute__(self, name)
         def fake_method(*args, **kwargs):
             # print name, args, kwargs
             return [(name, args, kwargs)]
         return fake_method
-
-
