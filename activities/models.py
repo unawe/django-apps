@@ -23,7 +23,7 @@ from sorl.thumbnail import ImageField
 
 from django_ext.models import PublishingModel, PublishingManager
 from django_ext.models.spaceawe import SpaceaweModel
-from . import utils, tasks
+from . import utils
 # # from filemanager.models import File as ManagedFile
 from institutions.models import Institution, Person
 
