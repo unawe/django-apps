@@ -15,7 +15,6 @@ urlpatterns = [
 
     # url(r'^(?P<code>\d{4})/print/$', views.activity_pdf, name='print'),
     url(r'^(?P<code>\d{4})/(?P<slug>.+)?/$', views.ActivityDetailView.as_view(), name='detail'),
-    url(r'^(?P<slug>.+)?/$', views.ActivityDetailBySlug.as_view()),  # old style astroEDU URL
 ]
 
 if settings.SHORT_NAME == 'spaceawe':
@@ -23,4 +22,9 @@ if settings.SHORT_NAME == 'spaceawe':
         url(r'^category/(?P<category>\w+)/$', views.ActivityListView.as_view(), name='list_by_category'),
         #url(r'^level/(?P<level>\w+)/$', views.ActivityListView.as_view(), name='list_by_level'),
         url(r'^category/(?P<category>\w+)/level/(?P<level>\w+)/$', views.ActivityListView.as_view(), name='list_combine'),
+    ]
+
+if settings.SHORT_NAME == 'astroedu':
+    urlpatterns += [
+        url(r'^(?P<slug>.+)?/$', views.ActivityDetailBySlug.as_view()),  # old style astroEDU URL
     ]
