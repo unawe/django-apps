@@ -124,9 +124,10 @@ def detail_by_code(request, code):
     return redirect(obj, permanent=True)
 
 
-class ActivityDetailBySlug(TranslatableSlugMixin, ActivityDetailView):
-    slug_field = 'slug'
-    slug_url_kwarg = 'slug'
+def detail_by_slug(request, slug):
+    'When only the slug is provided, try to redirect to the canonical URL (old style astroEDU URLs)'
+    obj = _activity_queryset(request).get(translations__slug=slug)
+    return redirect(obj, permanent=True)
 
 
 class ActivityFeed(Feed):

@@ -26,5 +26,5 @@ if settings.SHORT_NAME == 'spaceawe':
 
 if settings.SHORT_NAME == 'astroedu':
     urlpatterns += [
-        url(r'^(?P<slug>.+)?/$', views.ActivityDetailBySlug.as_view()),  # old style astroEDU URL
+        url(r'^(?P<slug>.+)?/$', views.detail_by_slug),  # old style astroEDU URL
     ]
