@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 import logging
 
 # Get an instance of a logger
-logger = logging.getLogger('kokotko')
+logger = logging.getLogger('spaceawe')
 
 
 def get_python_thing(fullname):
@@ -40,6 +40,30 @@ def get_generated_url(objdef, file_type, code, lang=None):
     else:
         obj = model.objects.available().get(code=code)
     filename = generate_one(objdef, obj, file_type)
+    return settings.MEDIA_URL + objdef['path'] + filename
+
+
+def generate_career(objdef, obj, file_type, force=False, site_url=None):
+    ctx = {'slug': obj.slug, 'id': obj.id, 'ext': file_type}
+    if hasattr(obj, 'language_code'):
+        ctx['lang'] = obj.language_code
+    filename = objdef['filename_tpl'] % ctx
+    path = os.path.join(settings.MEDIA_ROOT, objdef['path'], filename)
+    if force or not (os.path.exists(path)):
+        if not site_url:
+            site_url = settings.SITE_URL
+        renderer = get_python_thing(objdef['renderers'][file_type])
+        renderer(obj, path, site_url=site_url)
+    return filename
+
+
+def get_career_generated_url(objdef, file_type, career_id, lang=None):
+    model = get_python_thing(objdef['model'])
+    if lang:
+        obj = model.objects.available().language(lang).get(id=career_id)
+    else:
+        obj = model.objects.available().get(id=career_id)
+    filename = generate_career(objdef, obj, file_type)
     return settings.MEDIA_URL + objdef['path'] + filename
 
 
