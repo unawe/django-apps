@@ -27,6 +27,9 @@ from . import utils
 # # from filemanager.models import File as ManagedFile
 from institutions.models import Institution, Person
 
+from search.mixins import SearchModel
+
+
 # # def get_file_path(instance, filename):
 #     return os.path.join('activities/attach', instance.uuid, filename)
 
@@ -99,7 +102,7 @@ class ActivityManager(PublishingManager, TranslatableManager):
     queryset_class = ActivityQuerySet
 
 
-class Activity(TranslatableModel, PublishingModel, SpaceaweModel):  #,MediaAttachedModel
+class Activity(TranslatableModel, PublishingModel, SpaceaweModel , SearchModel):  #,MediaAttachedModel
 
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(unique=True, max_length=4, help_text='The 4 digit code that identifies the Activity, in the format "YY##": year, folowed by sequential number.')
