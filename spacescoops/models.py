@@ -27,6 +27,8 @@ from glossary.models import Entry as GlossaryEntry
 from django_ext.models.spaceawe import SpaceaweModel
 from institutions.models import Institution
 from . import tasks
+from search.mixins import SearchModel
+
 
 # Space Scoop app settings
 # Default translation credits
@@ -129,7 +131,7 @@ class ArticleManager(PublishingManager, TranslatableManager):
 #     tag = models.ForeignKey(LowerCaseTag, related_name="tagged_items")
 
 
-class Article(TranslatableModel, PublishingModel, SpaceaweModel):
+class Article(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
 
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=4, blank=False, db_index=True, help_text='The 4 digit code that identifies the Article, in the format "YY##": year, folowed by sequential number.')

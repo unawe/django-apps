@@ -26,8 +26,14 @@
           </div>
         </div>
       </div>
-    {% with object.articles.all|slice:':20' as object_list %} <!-- TODO: remove limit, load by AJAX or paginate -->
-      {% include 'spacescoops/article_list_component.html' %}
-    {% endwith %}
-      <div class="buffer"></div>
+      <div class="row">
+    {% include 'spacescoops/article_list_component_small.html' with object_list=object.scoops.all|slice:':3' %}
+      </div>
+        <div class="row">
+        <div class="col-md-12 right">
+          {% url 'partners:detail' slug=object.slug as partner_detail_url %}
+          {<a href="{% url 'scoops:list_by_institution' institution=object.slug %}">Read more Space Scoops</a> based on {{ object.name }} Press Releases.
+          {% blocktrans with partner_name=object.name partner_url=object.url %}<a href="{{ partner_url }}" target="_blank">Learn more</a> about {{ partner_name }}.{% endblocktrans %}
+        </div>
+      </div>      <div class="buffer"></div>
 {% endblock %}

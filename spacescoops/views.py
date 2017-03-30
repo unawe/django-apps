@@ -53,11 +53,16 @@ class ArticleListView(ViewUrlMixin, ListView):
         if 'category' in self.kwargs:
             category = self.kwargs['category']
             qs = qs.filter(**{category: True})
+        if 'institution' in self.kwargs:
+            institution = self.kwargs['institution']
+            qs = qs.filter(originalnews__institution__slug=institution)
         return qs
 
     def get_view_url(self):
         if 'category' in self.kwargs:
             return reverse('scoops:list_by_category', kwargs={'category': self.kwargs['category']})
+        if 'institution' in self.kwargs:
+            return reverse('scoops:list_by_institution', kwargs={'institution': self.kwargs['institution']})
         else:
             return super().get_view_url()
 

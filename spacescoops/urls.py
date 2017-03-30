@@ -16,3 +16,7 @@ if settings.SHORT_NAME == 'spaceawe':
     urlpatterns += [
         url(r'^category/(?P<category>\w+)/$', views.ArticleListView.as_view(), name='list_by_category'),
     ]
+if settings.SHORT_NAME == 'spacescoop':
+    urlpatterns += [
+        url(r'^institution/(?P<institution>.+)/$', views.ArticleListView.as_view(), name='list_by_institution'),
+    ]

@@ -27,12 +27,19 @@ from . import utils
 # # from filemanager.models import File as ManagedFile
 from institutions.models import Institution, Person
 
+from search.mixins import SearchModel
+
+
 # # def get_file_path(instance, filename):
 #     return os.path.join('activities/attach', instance.uuid, filename)
 
 
 def get_file_path_step(instance, filename):
     return os.path.join('activities/attach', str(instance.hostmodel.uuid), filename)
+
+
+def get_translated_file_path_step(instance, filename):
+    return os.path.join('activities/attach', instance.master.get_current_language(), str(instance.master.hostmodel.uuid), filename)
 
 
 ACTIVITY_SECTIONS = (
@@ -99,7 +106,7 @@ class ActivityManager(PublishingManager, TranslatableManager):
     queryset_class = ActivityQuerySet
 
 
-class Activity(TranslatableModel, PublishingModel, SpaceaweModel):  #,MediaAttachedModel
+class Activity(TranslatableModel, PublishingModel, SpaceaweModel , SearchModel):  #,MediaAttachedModel
 
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(unique=True, max_length=4, help_text='The 4 digit code that identifies the Activity, in the format "YY##": year, folowed by sequential number.')
@@ -176,6 +183,9 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel):  #,MediaAttac
 
     def attachment_list(self):
         return self.attachment_set.filter(show=True)
+
+    def languageattachment_list(self):
+        return self.languageattachment_set.filter(show=True)
 
     def metadata_aslist(self):
         result = []
@@ -280,6 +290,32 @@ class AuthorInstitution(models.Model):
 
     def __str__(self):
         return self.display_name()
+
+
+class LanguageAttachment(TranslatableModel):
+    main_visual = models.BooleanField(default=False, help_text='The main visual is used as the cover image.')
+    show = models.BooleanField(default=False, verbose_name='Show', help_text='Include in attachment list.')
+    position = models.PositiveSmallIntegerField(default=0, verbose_name='Position',
+                                                help_text='Used to define the order of attachments in the attachment list.')
+    hostmodel = models.ForeignKey(Activity)
+
+    def display_name(self):
+        if self.title:
+            return self.title
+        else:
+            return os.path.basename(self.file.name)
+
+    def __str__(self):
+        return self.display_name()
+
+    class Meta:
+        ordering = ['-show', 'position', 'id']
+
+
+class LanguageAttachmentTranslation(TranslatedFieldsModel):
+    title = models.CharField(max_length=255, blank=True)
+    file = models.FileField(blank=True, upload_to=get_translated_file_path_step, )
+    master = models.ForeignKey(LanguageAttachment, related_name='translations', null=True)
 
 
 class Attachment(models.Model):
