@@ -13,10 +13,12 @@ from django.conf import settings
 from contrib.remainingcharacters.admin import CounterAdmin
 # from contrib.adminutils import download_csv
 
-from .models import Activity, Attachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository
+from .models import Activity, Attachment, LanguageAttachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository
 # from activities.models import Richtext
 # from filemanager.models import File as ManagedFile
 from activities.utils import bleach_clean
+
+from parler.admin import TranslatableTabularInline
 
 # class RichtextAdminForm(forms.ModelForm):
 #     from pagedown.widgets import AdminPagedownWidget
@@ -80,6 +82,12 @@ class AuthorInstitutionInline(admin.TabularInline):
 class ActivityAttachmentInline(admin.TabularInline):
     model = Attachment
     formset = ActivityAttachmentInlineFormset
+    fields = ('title', 'file', 'main_visual', 'show', 'position', )
+
+
+class ActivityLanguageAttachmentInline(TranslatableTabularInline):
+    model = LanguageAttachment
+    #formset = ActivityAttachmentInlineFormset
     fields = ('title', 'file', 'main_visual', 'show', 'position', )
 
 
@@ -166,7 +174,7 @@ class ActivityAdmin(TranslatableAdmin):
     list_filter = ('age', 'level', 'time', 'group', 'supervised', 'cost', 'location', )
     # actions = (download_csv, )  #NOT WORKING with django-parler
 
-    inlines = [AuthorInstitutionInline, ActivityAttachmentInline, RepositoryEntryInline, ]
+    inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
 
     fieldsets = [
         (None,
