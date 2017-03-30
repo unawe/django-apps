@@ -27,7 +27,7 @@
       <div class="row">
         <div class="col-md-12 right">
           {% url 'partners:detail' slug=object.slug as partner_detail_url %}
-          {% blocktrans with partner_name=object.name %}<a href="{{ partner_detail_url }}">Read more Space Scoops</a> based on {{ partner_name }} Press Releases.{% endblocktrans %}
+          <a href="{% url 'scoops:list_by_institution' institution=object.slug %}">Read more Space Scoops</a> based on {{ object.name }} Press Releases.
           {% blocktrans with partner_name=object.name partner_url=object.url %}<a href="{{ partner_url }}" target="_blank">Learn more</a> about {{ partner_name }}.{% endblocktrans %}
         </div>
       </div>
