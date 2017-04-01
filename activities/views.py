@@ -120,13 +120,13 @@ class ActivityDetailContentPrintView(ActivityDetailView):
 
 def detail_by_code(request, code):
     'When only the code is provided, redirect to the canonical URL'
-    obj = _activity_queryset(request).get(code=code)
+    obj = _activity_queryset(request, only_translations=False).get(code=code)
     return redirect(obj, permanent=True)
 
 
 def detail_by_slug(request, slug):
     'When only the slug is provided, try to redirect to the canonical URL (old style astroEDU URLs)'
-    obj = _activity_queryset(request).get(translations__slug=slug)
+    obj = _activity_queryset(request, only_translations=False).get(translations__slug=slug)
     return redirect(obj, permanent=True)
 
 
