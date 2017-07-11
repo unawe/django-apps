@@ -191,6 +191,10 @@ class PartnerListView(ListView):
         qs = _partner_queryset(self.request).order_by('-spacescoop_count')
         return qs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
+
 
 class PartnerDetailView(DetailView):
     template_name = 'spacescoops/partner_detail.html'
