@@ -174,24 +174,53 @@ class ActivityAdmin(TranslatableAdmin):
     list_filter = ('age', 'level', 'time', 'group', 'supervised', 'cost', 'location', )
     # actions = (download_csv, )  #NOT WORKING with django-parler
 
-    inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
+    if settings.SHORT_NAME == 'astroedu':
+        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, RepositoryEntryInline, ]
+    else:
+        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
 
-    fieldsets = [
-        (None,
-            {'fields': ('code', 'title', )}),
-        ('Publishing',
-            {'fields': ('published', 'featured', ('release_date', 'embargo_date'), ), }),
-        (None,
-            {'fields': (('age', 'level', ), ('time', 'group', 'supervised', 'cost',), ('location', 'skills', 'learning',), 'keywords', 'big_idea', )}),
-        ('Description',
-            {'fields': ('theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background', )}),
-        (None,
-            {'fields': ('fulldesc', )}),
-        (None,
-            {'fields': ('curriculum', 'additional_information', 'conclusion', )}),
-        ('Source',
-            {'fields': ('spaceawe_authorship', ('sourcelink_name', 'sourcelink_url', ), )}),
-    ]
+    # activities is shared model, but on astroedu is needed modified fieldset
+    if settings.SHORT_NAME == 'astroedu':
+        fieldsets = [
+            (None,
+             {'fields': ('code', 'title',)}),
+            ('Publishing',
+             {'fields': ('published', 'featured', ('release_date', 'embargo_date'),),}),
+            (None,
+             {'fields': (
+                 ('age', 'level',), ('time', 'group', 'supervised', 'cost',), ('location', 'skills', 'learning',),
+                 'keywords')}),
+            ('Description',
+             {'fields': (
+                 'theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background',)}),
+            (None,
+             {'fields': ('fulldesc',)}),
+            (None,
+             {'fields': ('curriculum', 'additional_information', 'conclusion',)}),
+        ]
+    else:
+        fieldsets = [
+            (None,
+             {'fields': ('code', 'title',)}),
+            ('Publishing',
+             {'fields': ('published', 'featured', ('release_date', 'embargo_date'),),}),
+            (None,
+             {'fields': (
+                 ('age', 'level',), ('time', 'group', 'supervised', 'cost',), ('location', 'skills', 'learning',),
+                 'keywords', 'big_idea',)}),
+            ('Description',
+             {'fields': (
+                 'theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background',)}),
+            (None,
+             {'fields': ('fulldesc',)}),
+            (None,
+             {'fields': ('curriculum', 'additional_information', 'conclusion',)}),
+            ('Source',
+             {'fields': ('spaceawe_authorship', ('sourcelink_name', 'sourcelink_url',),)}),
+        ]
+
+
+
     readonly_fields = ('is_released', )
     # richtext_fields = ('description', 'materials', 'objectives', 'background', 'fulldesc_intro', 'fulldesc_outro', 'additional_information', 'evaluation', 'curriculum', 'credit', )
     formfield_overrides = {
