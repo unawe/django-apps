@@ -122,15 +122,6 @@ class ArticleManager(PublishingManager, TranslatableManager):
     queryset_class = ArticleQuerySet
 
 
-# class LowerCaseTag(TagBase):
-#     def save(self, *args, **kwargs):
-#         self.name = self.name.lower()
-#         super().save(*args, **kwargs)
-
-# class LowerCaseTaggedItem(GenericTaggedItemBase):
-#     tag = models.ForeignKey(LowerCaseTag, related_name="tagged_items")
-
-
 class Article(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
 
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
@@ -139,9 +130,7 @@ class Article(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
     original_news = models.ManyToManyField(Institution, through='OriginalNews', related_name='scoops', )
 
     objects = ArticleManager()
-    # tags = TaggableManager(blank=True, through=LowerCaseTaggedItem)
     tags = TaggableManager(blank=True)
-    # available = PublishingManager()
 
     @property
     def main_visual(self):
@@ -231,27 +220,19 @@ class Article(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
         return self.code + ': ' + self.title
 
     def get_absolute_url(self):
-        return reverse('scoops:detail', kwargs={'code': self.code, 'slug': self.slug, })
+        if settings.SHORT_NAME == 'unawe2':
+            return reverse('news:spacescoops-detail', kwargs={'code': self.code, 'slug': self.slug, })
+        else:
+            return reverse('scoops:detail', kwargs={'code': self.code, 'slug': self.slug, })
 
     class Meta(PublishingModel.Meta):
         verbose_name = 'space scoop'
-
-    # class PublishingMeta(PublishingModel.PublishingMeta):
-    #     permission_all = publishing_login_required()
-    #     permission_embargoed = publishing_login_required()
-
-
-# @receiver(post_save, sender=Article)
-# def article_post_save(sender, instance, created, **kwargs):
-#     tasks.populate_article_count()
 
 
 class ArticleTranslation(TranslatedFieldsModel):
     master = models.ForeignKey(Article, related_name='translations', null=True)
     slug = AutoSlugField(max_length=200, populate_from='title', always_update=True, unique=False)
-    # slug = models.SlugField(max_length=255, help_text='The Slug must be unique, and closely match the title for better SEO; it is used as part of the URL.')
     title = models.CharField(_('title'), max_length=200)
-    # lead = RichTextField(blank=True, config_name='small')
     story = RichTextField(config_name='spacescoop')
     cool_fact = RichTextField(blank=True, null=True, config_name='small')
     translation_credit_text = models.CharField(max_length=255, blank=True, null=True, help_text='If set, this text will replace the default translation for credits.')
@@ -268,11 +249,6 @@ class ArticleTranslation(TranslatedFieldsModel):
 
 def get_file_path_article_attachment(instance, filename):
     return os.path.join('articles/attach', str(instance.hostmodel.uuid), filename)
-
-
-# class Attachment(BaseAttachmentModel):
-#     hostmodel = models.ForeignKey(Article)
-#     file = models.FileField(blank=True, upload_to=get_file_path_article_attachment)
 
 
 class Image(BaseAttachmentModel):
