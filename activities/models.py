@@ -106,7 +106,7 @@ class ActivityManager(PublishingManager, TranslatableManager):
     queryset_class = ActivityQuerySet
 
 
-class Activity(TranslatableModel, PublishingModel, SpaceaweModel , SearchModel):  #,MediaAttachedModel
+class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
 
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(unique=True, max_length=4, help_text='The 4 digit code that identifies the Activity, in the format "YY##": year, folowed by sequential number.')
@@ -348,7 +348,7 @@ class CollectionManager(PublishingManager, TranslatableManager):
 
 
 class Collection(TranslatableModel, PublishingModel):
-    activities = models.ManyToManyField(Activity, related_name='+', )
+    activities = models.ManyToManyField(Activity, related_name='+', blank=True)
     # image = models.ForeignKey(ManagedFile, null=True)
     image = ImageField(null=True, blank=True, upload_to='collections')
 
