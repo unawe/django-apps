@@ -245,7 +245,7 @@ class CollectionAdminForm(TranslatableModelForm):
         cleaned_data = super().clean()
         slug = cleaned_data.get('slug')
         if not re.match('^[a-z]+$', slug):
-            raise forms.ValidationError('The slug should contain olny lowercase characters')
+            raise forms.ValidationError('The slug must contain only lowercase characters')
         return cleaned_data
 
 
