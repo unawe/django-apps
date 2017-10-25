@@ -87,14 +87,11 @@ class ActivityAttachmentInline(admin.TabularInline):
 
 class ActivityLanguageAttachmentInline(TranslatableTabularInline):
     model = LanguageAttachment
-    #formset = ActivityAttachmentInlineFormset
     fields = ('title', 'file', 'main_visual', 'show', 'position', )
 
 
 class RepositoryEntryInline(admin.TabularInline):
     model = RepositoryEntry
-    # readonly_fields = ('repo',)
-    # fields = ('url', )
 
 
 class ActivityAdminForm(TranslatableModelForm):
@@ -109,7 +106,6 @@ class ActivityAdminForm(TranslatableModelForm):
             'cost': forms.RadioSelect,
             'location': forms.RadioSelect,
             'learning': forms.RadioSelect,
-            # 'log': forms.Textarea(attrs={'disabled': True}),
             'teaser': forms.TextInput(attrs={'class': 'vTextField'}),
         }
 
@@ -148,6 +144,10 @@ class ActivityAdminForm(TranslatableModelForm):
         return cleaned_data
 
 
+class MembershipInline(admin.TabularInline):
+    model = Collection.activities.through
+
+
 class ActivityAdmin(TranslatableAdmin):
 
     def view_on_site(self, obj):
@@ -175,7 +175,7 @@ class ActivityAdmin(TranslatableAdmin):
     # actions = (download_csv, )  #NOT WORKING with django-parler
 
     if settings.SHORT_NAME == 'astroedu':
-        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, RepositoryEntryInline, ]
+        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, RepositoryEntryInline, MembershipInline, ]
     else:
         inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
 
@@ -254,24 +254,23 @@ class CollectionAdmin(TranslatableAdmin):
 
     def view_link(self, obj):
         return '<a href="%s">View</a>' % obj.get_absolute_url()
+
     view_link.short_description = ''
     view_link.allow_tags = True
-
-    # def thumb_embed(self, obj):
-    #     if obj.image:
-    #         return '<img src="%s" style="height:50px" />' % obj.thumb_url()
-    # thumb_embed.short_description = 'Thumbnail'
-    # thumb_embed.allow_tags = True
 
     list_display = ('title', 'slug', 'view_link', )  # 'thumb_embed',
 
     fieldsets = [
         (None, {'fields': ('title', 'slug', )}),
         ('Publishing', {'fields': ('published', 'featured', ('release_date', 'embargo_date'), ), }),
-        ('Contents', {'fields': ('description', 'image', 'activities', )}),
-
+        ('Contents', {'fields': ('description', 'image', )}),
     ]
-    filter_horizontal = ['activities']
+
+    #inlines = [
+    #    MembershipInline,
+    #]
+
+    #exclude = ('activities',)
 
 
 if settings.SHORT_NAME == 'astroedu':
