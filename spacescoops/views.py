@@ -1,13 +1,10 @@
+from django.db.models.query import Prefetch
 from django.http import Http404
-# from django.http import HttpResponse
-# from django.template import RequestContext, loader
-
-# from django.shortcuts import get_object_or_404, render
 
 from django.views.generic import ListView, DetailView
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
-from parler.views import TranslatableSlugMixin, ViewUrlMixin, FallbackLanguageResolved
+from parler.views import TranslatableSlugMixin, ViewUrlMixin
 from django.contrib.syndication.views import Feed
 from django.utils.translation import ugettext as _
 from django.utils.translation import get_language
@@ -178,8 +175,9 @@ class CategoryDetailView(TranslatableSlugMixin, DetailView):
 
 
 def _partner_queryset(request):
-    qs = Institution.objects.all()
-    qs = Article.add_prefetch_related(qs, 'scoops')
+    scoops_prefetch = Prefetch('scoops', queryset=Article.objects.available(user=request.user).filter(images__isnull=False).distinct(), to_attr='scoops_available')
+    qs = Institution.objects.all().prefetch_related(scoops_prefetch)
+
     return qs
 
 
@@ -190,6 +188,10 @@ class PartnerListView(ListView):
     def get_queryset(self):
         qs = _partner_queryset(self.request).order_by('-spacescoop_count')
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
 
 
 class PartnerDetailView(DetailView):

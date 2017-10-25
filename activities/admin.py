@@ -87,14 +87,11 @@ class ActivityAttachmentInline(admin.TabularInline):
 
 class ActivityLanguageAttachmentInline(TranslatableTabularInline):
     model = LanguageAttachment
-    #formset = ActivityAttachmentInlineFormset
     fields = ('title', 'file', 'main_visual', 'show', 'position', )
 
 
 class RepositoryEntryInline(admin.TabularInline):
     model = RepositoryEntry
-    # readonly_fields = ('repo',)
-    # fields = ('url', )
 
 
 class ActivityAdminForm(TranslatableModelForm):
@@ -109,7 +106,6 @@ class ActivityAdminForm(TranslatableModelForm):
             'cost': forms.RadioSelect,
             'location': forms.RadioSelect,
             'learning': forms.RadioSelect,
-            # 'log': forms.Textarea(attrs={'disabled': True}),
             'teaser': forms.TextInput(attrs={'class': 'vTextField'}),
         }
 
@@ -148,6 +144,10 @@ class ActivityAdminForm(TranslatableModelForm):
         return cleaned_data
 
 
+class MembershipInline(admin.TabularInline):
+    model = Collection.activities.through
+
+
 class ActivityAdmin(TranslatableAdmin):
 
     def view_on_site(self, obj):
@@ -174,24 +174,53 @@ class ActivityAdmin(TranslatableAdmin):
     list_filter = ('age', 'level', 'time', 'group', 'supervised', 'cost', 'location', )
     # actions = (download_csv, )  #NOT WORKING with django-parler
 
-    inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
+    if settings.SHORT_NAME == 'astroedu':
+        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, RepositoryEntryInline, MembershipInline, ]
+    else:
+        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
 
-    fieldsets = [
-        (None,
-            {'fields': ('code', 'title', )}),
-        ('Publishing',
-            {'fields': ('published', 'featured', ('release_date', 'embargo_date'), ), }),
-        (None,
-            {'fields': (('age', 'level', ), ('time', 'group', 'supervised', 'cost',), ('location', 'skills', 'learning',), 'keywords', 'big_idea', )}),
-        ('Description',
-            {'fields': ('theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background', )}),
-        (None,
-            {'fields': ('fulldesc', )}),
-        (None,
-            {'fields': ('curriculum', 'additional_information', 'conclusion', )}),
-        ('Source',
-            {'fields': ('spaceawe_authorship', ('sourcelink_name', 'sourcelink_url', ), )}),
-    ]
+    # activities is shared model, but on astroedu is needed modified fieldset
+    if settings.SHORT_NAME == 'astroedu':
+        fieldsets = [
+            (None,
+             {'fields': ('code', 'title',)}),
+            ('Publishing',
+             {'fields': ('published', 'featured', ('release_date', 'embargo_date'),),}),
+            (None,
+             {'fields': (
+                 ('age', 'level',), ('time', 'group', 'supervised', 'cost',), ('location', 'skills', 'learning',),
+                 'keywords')}),
+            ('Description',
+             {'fields': (
+                 'theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background',)}),
+            (None,
+             {'fields': ('fulldesc',)}),
+            (None,
+             {'fields': ('curriculum', 'additional_information', 'conclusion',)}),
+        ]
+    else:
+        fieldsets = [
+            (None,
+             {'fields': ('code', 'title',)}),
+            ('Publishing',
+             {'fields': ('published', 'featured', ('release_date', 'embargo_date'),),}),
+            (None,
+             {'fields': (
+                 ('age', 'level',), ('time', 'group', 'supervised', 'cost',), ('location', 'skills', 'learning',),
+                 'keywords', 'big_idea',)}),
+            ('Description',
+             {'fields': (
+                 'theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background',)}),
+            (None,
+             {'fields': ('fulldesc',)}),
+            (None,
+             {'fields': ('curriculum', 'additional_information', 'conclusion',)}),
+            ('Source',
+             {'fields': ('spaceawe_authorship', ('sourcelink_name', 'sourcelink_url',),)}),
+        ]
+
+
+
     readonly_fields = ('is_released', )
     # richtext_fields = ('description', 'materials', 'objectives', 'background', 'fulldesc_intro', 'fulldesc_outro', 'additional_information', 'evaluation', 'curriculum', 'credit', )
     formfield_overrides = {
@@ -216,7 +245,7 @@ class CollectionAdminForm(TranslatableModelForm):
         cleaned_data = super().clean()
         slug = cleaned_data.get('slug')
         if not re.match('^[a-z]+$', slug):
-            raise forms.ValidationError('The slug should contain olny lowercase characters')
+            raise forms.ValidationError('The slug must contain only lowercase characters')
         return cleaned_data
 
 
@@ -225,24 +254,23 @@ class CollectionAdmin(TranslatableAdmin):
 
     def view_link(self, obj):
         return '<a href="%s">View</a>' % obj.get_absolute_url()
+
     view_link.short_description = ''
     view_link.allow_tags = True
-
-    # def thumb_embed(self, obj):
-    #     if obj.image:
-    #         return '<img src="%s" style="height:50px" />' % obj.thumb_url()
-    # thumb_embed.short_description = 'Thumbnail'
-    # thumb_embed.allow_tags = True
 
     list_display = ('title', 'slug', 'view_link', )  # 'thumb_embed',
 
     fieldsets = [
         (None, {'fields': ('title', 'slug', )}),
         ('Publishing', {'fields': ('published', 'featured', ('release_date', 'embargo_date'), ), }),
-        ('Contents', {'fields': ('description', 'image', 'activities', )}),
-
+        ('Contents', {'fields': ('description', 'image', )}),
     ]
-    filter_horizontal = ['activities']
+
+    #inlines = [
+    #    MembershipInline,
+    #]
+
+    #exclude = ('activities',)
 
 
 if settings.SHORT_NAME == 'astroedu':
