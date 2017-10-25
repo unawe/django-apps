@@ -348,7 +348,7 @@ class CollectionManager(PublishingManager, TranslatableManager):
 
 
 class Collection(TranslatableModel, PublishingModel):
-    activities = models.ManyToManyField(Activity, related_name='+', blank=True)
+    activities = models.ManyToManyField(Activity, related_name='collections', blank=True)
     # image = models.ForeignKey(ManagedFile, null=True)
     image = ImageField(null=True, blank=True, upload_to='collections')
 
