@@ -8,6 +8,7 @@ from django.db import models
 # from django.conf import settings
 # from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
+from django.utils.timezone import now
 from django.core.urlresolvers import reverse
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save
