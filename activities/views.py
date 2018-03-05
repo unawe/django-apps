@@ -50,7 +50,7 @@ class ActivityListView(ViewUrlMixin, ListView):
     def get_view_url(self):
         if 'level' in self.kwargs:
             return reverse('activities:list_combine', kwargs={'category': self.kwargs.get('category', self.all_categories),
-                                                              'level' : self.kwargs['level']})
+                                                              'level': self.kwargs['level']})
         else:
             return reverse('activities:list_by_category', kwargs={'category': self.kwargs.get('category', self.all_categories)})
 

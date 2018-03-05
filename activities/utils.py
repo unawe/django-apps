@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import re
 import urllib
@@ -53,6 +54,9 @@ def local_resource(uri):
     """
     Returns the full file path and a relative path for the resource
     """
+    # because activities.utils.UnsupportedMediaPathException: media urls must start with /media/ or /static/
+    if uri.startswith(settings.SITE_URL):
+        uri = uri.replace(settings.SITE_URL, '')
     if uri.startswith(settings.MEDIA_URL):
         local = uri.replace(settings.MEDIA_URL, '')
         path = os.path.join(settings.MEDIA_ROOT, local)

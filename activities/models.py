@@ -4,18 +4,9 @@ import re
 
 from django.conf import settings
 from django.db import models
-from django.utils.translation import ugettext as _
-from django.core.exceptions import ValidationError
-from django.db.models.signals import pre_save, post_save
-from django.dispatch import receiver
 from django.core.urlresolvers import reverse
-# from django.contrib.redirects.models import Redirect
-# from django.contrib.sites.models import Site
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
-# from tinymce.models import HTMLField
-# from markupfield.fields import MarkupField
-# from markupmirror.fields import MarkupMirrorField
 from parler.models import TranslatableModel, TranslatedFieldsModel
 from parler.managers import TranslatableManager, TranslatableQuerySet
 from autoslug import AutoSlugField
@@ -24,14 +15,9 @@ from sorl.thumbnail import ImageField
 from django_ext.models import PublishingModel, PublishingManager
 from django_ext.models.spaceawe import SpaceaweModel
 from . import utils
-# # from filemanager.models import File as ManagedFile
 from institutions.models import Institution, Person
 
 from search.mixins import SearchModel
-
-
-# # def get_file_path(instance, filename):
-#     return os.path.join('activities/attach', instance.uuid, filename)
 
 
 def get_file_path_step(instance, filename):
@@ -107,7 +93,6 @@ class ActivityManager(PublishingManager, TranslatableManager):
 
 
 class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
-
     uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     code = models.CharField(unique=True, max_length=4, help_text='The 4 digit code that identifies the Activity, in the format "YY##": year, folowed by sequential number.')
     doi = models.CharField(blank=True, max_length=50, verbose_name='DOI', help_text='Digital Object Identifier, in the format XXXX/YYYY. See http://www.doi.org/')
@@ -221,11 +206,11 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
     def get_absolute_url(self):
         return reverse('activities:detail', kwargs={'code': self.code, 'slug': self.slug, })
 
-    # def get_absolute_url_full(self):
-    #     return utils.get_qualified_url(self.get_absolute_url())
-
     def get_short_url_full(self):
-        return utils.get_qualified_url('/a/%s' % self.code)
+        if settings.SHORT_NAME == 'astroedu':
+            return utils.get_qualified_url('/a/%s' % self.code)
+        else:
+            return None
 
     def get_footer_disclaimer(self):
         return 'Go to %s for additional resources and download options of this activity.' % self.get_short_url_full()
@@ -236,9 +221,7 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
 
 
 class ActivityTranslation(TranslatedFieldsModel):
-
     master = models.ForeignKey(Activity, related_name='translations', null=True)
-    # slug = models.SlugField(unique=True, max_length=255, help_text='The Slug must be unique, and closely match the title for better SEO; it is used as part of the URL.')
     slug = AutoSlugField(max_length=200, populate_from='title', always_update=True, unique=False)
     title = models.CharField(max_length=255, db_index=True, help_text='Title is shown in browser window. Use a good informative title, since search engines normally display the title on their result pages.')
     teaser = models.TextField(blank=False, max_length=140, help_text='One line, 140 characters maximum')
@@ -295,8 +278,7 @@ class AuthorInstitution(models.Model):
 class LanguageAttachment(TranslatableModel):
     main_visual = models.BooleanField(default=False, help_text='The main visual is used as the cover image.')
     show = models.BooleanField(default=False, verbose_name='Show', help_text='Include in attachment list.')
-    position = models.PositiveSmallIntegerField(default=0, verbose_name='Position',
-                                                help_text='Used to define the order of attachments in the attachment list.')
+    position = models.PositiveSmallIntegerField(default=0, verbose_name='Position', help_text='Used to define the order of attachments in the attachment list.')
     hostmodel = models.ForeignKey(Activity)
 
     def display_name(self):
@@ -349,7 +331,6 @@ class CollectionManager(PublishingManager, TranslatableManager):
 
 class Collection(TranslatableModel, PublishingModel):
     activities = models.ManyToManyField(Activity, related_name='collections', blank=True)
-    # image = models.ForeignKey(ManagedFile, null=True)
     image = ImageField(null=True, blank=True, upload_to='collections')
 
     creation_date = models.DateTimeField(auto_now_add=True, null=True)
@@ -383,7 +364,6 @@ class CollectionTranslation(TranslatedFieldsModel):
     master = models.ForeignKey(Collection, related_name='translations', null=True)
     title = models.CharField(blank=False, max_length=255)
     slug = models.SlugField(unique=True, db_index=True, help_text='Slug identifies the Collection; it is used as part of the URL. Use only lowercase characters.')
-    # slug = AutoSlugField(max_length=200, populate_from='title', always_update=True, unique=False)
     description = models.TextField(blank=True, verbose_name='brief description', )
 
 
@@ -402,16 +382,6 @@ class RepositoryEntry(models.Model):
     repo = models.ForeignKey(Repository, blank=False, null=True)
     url = models.URLField(blank=False, max_length=255, )
     activity = models.ForeignKey(Activity)
-
-    # def clean(self, *args, **kwargs):
-    #     self.repo = None
-    #     for name, value in settings.REPOSITORIES.items():
-    #         url_pattern = value[1]
-    #         if re.match(url_pattern, self.url):
-    #             self.repo = name
-    #     if not self.repo:
-    #         raise ValidationError('Unknown repository URL. Known repositories are: ' + ', '.join(settings.REPOSITORIES.keys()))
-    #     # super().clean(*args, **kwargs)
 
     def __str__(self):
         return '%s - %s' % (self.repo.name, self.url)
