@@ -158,9 +158,12 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
     @classmethod
     def add_prefetch_related(self, qs, prefix=""):
         # # add _after_ qs.filter! see django docs on prefetch_related
-        # if prefix:
-        #     prefix += '__'
-        # qs = qs.prefetch_related('%stranslations' % prefix)
+        if prefix:
+            prefix += '__'
+        qs = qs.prefetch_related('%stranslations' % prefix)
+        #qs = qs.prefetch_related('{}metadataoption'.format(prefix))
+
+
         # qs = qs.prefetch_related('%scategories' % prefix)
         # qs = qs.prefetch_related('%scategories__translations' % prefix)
         # qs = qs.prefetch_related('%simages' % prefix)
@@ -389,3 +392,65 @@ class RepositoryEntry(models.Model):
     class Meta:
         ordering = ['repo']
         verbose_name_plural = 'repository entries'
+
+
+
+
+
+
+class JourneyCategoryQuerySet(TranslatableQuerySet):
+    pass
+
+
+class JourneyCategoryManager(PublishingManager, TranslatableManager):
+    queryset_class = JourneyCategoryQuerySet
+
+
+class JourneyCategory(TranslatableModel, PublishingModel):
+    objects = JourneyCategoryManager()
+
+    class Meta:
+        verbose_name = "journey category"
+        verbose_name_plural = "journey category"
+
+
+class JourneyCategoryTranslation(TranslatedFieldsModel):
+    master = models.ForeignKey(JourneyCategory, related_name='translations', null=True)
+    title = models.CharField(blank=False, max_length=255, verbose_name='Title')
+    description = models.TextField(blank=True, verbose_name='General introduction')
+
+
+class JourneyChapterQuerySet(TranslatableQuerySet):
+    pass
+
+
+class JourneyChapterManager(TranslatableManager):
+    queryset_class = JourneyChapterQuerySet
+
+
+class JourneyChapter(TranslatableModel):
+    """
+    There was an idea to make 'The journey of ideas' section in different way than other Activities.
+    That's why there is another model/view.
+    """
+    activities = models.ManyToManyField(Activity, related_name='+', blank=True)
+    journey = models.ForeignKey(JourneyCategory)
+    objects = JourneyChapterManager()
+
+    def __str__(self):
+        return self.title
+
+    class Meta(TranslatableModel.Meta):
+        pass
+
+
+class JourneyChapterTranslation(TranslatedFieldsModel):
+    master = models.ForeignKey(JourneyChapter, related_name='translations', null=True)
+    title = models.CharField(blank=False, max_length=255, verbose_name='Chapter title')
+    description = models.TextField(blank=True, verbose_name='Chapter introduction')
+
+
+    class Meta:
+        unique_together = (
+            ('language_code', 'master'),
+        )

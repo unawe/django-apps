@@ -19,9 +19,11 @@ urlpatterns = [
 
 if settings.SHORT_NAME == 'spaceawe':
     urlpatterns += [
+        url(r'^category/heritage/.?$', views.JourneyListView.as_view(), name='journey',),
         url(r'^category/(?P<category>\w+)/$', views.ActivityListView.as_view(), name='list_by_category'),
         #url(r'^level/(?P<level>\w+)/$', views.ActivityListView.as_view(), name='list_by_level'),
         url(r'^category/(?P<category>\w+)/level/(?P<level>\w+)/$', views.ActivityListView.as_view(), name='list_combine'),
+
     ]
 
 if settings.SHORT_NAME == 'astroedu':

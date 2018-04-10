@@ -14,7 +14,7 @@ from parler.forms import TranslatableModelForm
 from django_mistune import markdown
 
 from activities.utils import bleach_clean
-from .models import Activity, Attachment, LanguageAttachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository
+from .models import Activity, Attachment, LanguageAttachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository, JourneyCategory, JourneyChapter
 
 
 class MetadataOptionAdmin(admin.ModelAdmin):
@@ -258,7 +258,7 @@ class ActivityAdmin(TranslatableAdmin):
     list_editable = ('published', 'featured', )
     ordering = ('-release_date', )
     date_hierarchy = 'release_date'
-    list_filter = ('age', 'level', 'time', 'group', 'supervised', 'cost', 'location', )
+    list_filter = ('age', 'level', 'time', 'group', 'supervised', 'cost', 'location')
     actions = [activities_csv]
 
     if settings.SHORT_NAME == 'astroedu':
@@ -365,6 +365,28 @@ elif settings.SHORT_NAME == 'spaceawe':
         ] + ActivityAdmin.fieldsets[1:]
 
 
+class JourneyChapterInlineAdmin(TranslatableTabularInline):
+    model = JourneyChapter
+    extra = 1
+
+    fields = ('title', 'description', 'activities')
+    raw_id_fields = ('activities', )
+    inlines = ('activities', )
+
+
+class JourneyAdmin(TranslatableAdmin):
+    inlines = [JourneyChapterInlineAdmin]
+
+    fieldsets = [
+        (None,
+         {'fields': ('title', 'description',)}),
+        ('Publishing',
+         {'fields': ('published', 'featured', ('release_date', 'embargo_date'),), }),
+    ]
+
+    list_display = ('title', 'published')
+
+admin.site.register(JourneyCategory, JourneyAdmin)
 admin.site.register(MetadataOption, MetadataOptionAdmin)
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(Repository)
