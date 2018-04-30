@@ -1,12 +1,10 @@
 import uuid
 import os
-import re
 
+from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.db import models
 from django.core.urlresolvers import reverse
-from django.contrib.admin.models import LogEntry
-from django.contrib.contenttypes.models import ContentType
 from parler.models import TranslatableModel, TranslatedFieldsModel
 from parler.managers import TranslatableManager, TranslatableQuerySet
 from autoslug import AutoSlugField
@@ -415,9 +413,11 @@ class JourneyCategory(TranslatableModel, PublishingModel):
 
 
 class JourneyCategoryTranslation(TranslatedFieldsModel):
+
     master = models.ForeignKey(JourneyCategory, related_name='translations', null=True)
     title = models.CharField(blank=False, max_length=255, verbose_name='Title')
-    description = models.TextField(blank=True, verbose_name='General introduction')
+    # description = models.TextField(blank=True, verbose_name='General introduction')
+    description = RichTextField(blank=True, null=True, verbose_name='General introduction', config_name='default')
 
 
 class JourneyChapterQuerySet(TranslatableQuerySet):
@@ -436,19 +436,16 @@ class JourneyChapter(TranslatableModel):
     activities = models.ManyToManyField(Activity, related_name='+', blank=True)
     journey = models.ForeignKey(JourneyCategory)
     objects = JourneyChapterManager()
+    position = models.IntegerField()
 
     def __str__(self):
         return self.title
-
-    class Meta(TranslatableModel.Meta):
-        pass
 
 
 class JourneyChapterTranslation(TranslatedFieldsModel):
     master = models.ForeignKey(JourneyChapter, related_name='translations', null=True)
     title = models.CharField(blank=False, max_length=255, verbose_name='Chapter title')
     description = models.TextField(blank=True, verbose_name='Chapter introduction')
-
 
     class Meta:
         unique_together = (

@@ -13,7 +13,6 @@ urlpatterns = [
     url(r'^(?P<code>\d{4})/first-page-print-preview/$', views.ActivityDetailFirstPagePrintView.as_view(), name='print-preview-header'),
     url(r'^(?P<code>\d{4})/content-print-preview/$', views.ActivityDetailContentPrintView.as_view(), name='print-preview-content'),
 
-    # url(r'^(?P<code>\d{4})/print/$', views.activity_pdf, name='print'),
     url(r'^(?P<code>\d{4})/(?P<slug>.+)?/$', views.ActivityDetailView.as_view(), name='detail'),
 ]
 
@@ -21,7 +20,6 @@ if settings.SHORT_NAME == 'spaceawe':
     urlpatterns += [
         url(r'^category/heritage/.?$', views.JourneyListView.as_view(), name='journey',),
         url(r'^category/(?P<category>\w+)/$', views.ActivityListView.as_view(), name='list_by_category'),
-        #url(r'^level/(?P<level>\w+)/$', views.ActivityListView.as_view(), name='list_by_level'),
         url(r'^category/(?P<category>\w+)/level/(?P<level>\w+)/$', views.ActivityListView.as_view(), name='list_combine'),
 
     ]
