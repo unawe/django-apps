@@ -14,7 +14,7 @@ from parler.forms import TranslatableModelForm
 from django_mistune import markdown
 
 from activities.utils import bleach_clean
-from .models import Activity, Attachment, LanguageAttachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository, JourneyCategory, JourneyChapter
+from .models import Activity, Attachment, LanguageAttachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository, JourneyCategory, JourneyChapter, Location
 
 
 class MetadataOptionAdmin(admin.ModelAdmin):
@@ -69,17 +69,15 @@ class RepositoryEntryInline(admin.TabularInline):
 
 
 class ActivityAdminForm(TranslatableModelForm):
-
     class Meta:
         model = Activity
-        fields = ('code', 'title', 'release_date', 'published', 'featured', 'description', 'materials', 'goals', 'objectives', 'background', 'fulldesc', 'evaluation', 'curriculum', 'additional_information', 'conclusion', 'space', 'earth', 'navigation', 'heritage', 'sourcelink_name', 'sourcelink_url', )
+        fields = ('code', 'title', 'release_date', 'published', 'featured', 'description', 'short_desc_material', 'materials', 'further_reading', 'goals', 'objectives', 'background', 'fulldesc', 'evaluation', 'curriculum', 'additional_information', 'conclusion', 'space', 'earth', 'navigation', 'heritage', 'sourcelink_name', 'sourcelink_url', )
         widgets = {
             'time': forms.RadioSelect,
             'group': forms.RadioSelect,
             'supervised': forms.RadioSelect,
             'cost': forms.RadioSelect,
             'location': forms.RadioSelect,
-            'learning': forms.RadioSelect,
             'teaser': forms.TextInput(attrs={'class': 'vTextField'}),
         }
 
@@ -248,6 +246,10 @@ class ActivityAdmin(TranslatableAdmin):
 
     def view_link(self, obj):
         return '<a href="%s">View</a>' % obj.get_absolute_url()
+
+    def get_countries(self):
+        return Location.objects.distinct('country').values('id', 'country')
+
     view_link.short_description = ''
     view_link.allow_tags = True
 
@@ -262,7 +264,7 @@ class ActivityAdmin(TranslatableAdmin):
     actions = [activities_csv]
 
     if settings.SHORT_NAME == 'astroedu':
-        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, RepositoryEntryInline, MembershipInline, ]
+        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, MembershipInline, ]
     else:
         inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
 
@@ -276,14 +278,20 @@ class ActivityAdmin(TranslatableAdmin):
             (None,
              {'fields': (
                  ('age', 'level',), ('time', 'group', 'supervised', 'cost',), ('location', 'skills', 'learning',),
-                 'keywords')}),
+                 'suitable_group_size', 'max_number_at_once',
+                 'keywords', 'affiliation', 'country', 'email', 'original_author', 'language')}),
+            ('Content Area focus',
+             {'fields': ('content_area_focus', )}),
+            ('Specific Content Category/s',
+             {'fields': ('astronomical_scientific_category', 'earth_science_keyword', 'space_science_keyword', 'other_keyword')}),
+
             ('Description',
              {'fields': (
-                 'theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background',)}),
+                 'teaser', 'materials', 'goals', 'objectives', 'evaluation', 'background',)}),
             (None,
-             {'fields': ('fulldesc',)}),
+             {'fields': ('fulldesc', 'short_desc_material')}),
             (None,
-             {'fields': ('curriculum', 'additional_information', 'conclusion',)}),
+             {'fields': ('curriculum', 'additional_information', 'conclusion', 'further_reading', 'reference')}),
         ]
     else:
         fieldsets = [
@@ -297,7 +305,7 @@ class ActivityAdmin(TranslatableAdmin):
                  'keywords', 'big_idea',)}),
             ('Description',
              {'fields': (
-                 'theme', 'teaser', 'description', 'goals', 'objectives', 'evaluation', 'materials', 'background',)}),
+                 'theme', 'teaser', 'goals', 'objectives', 'evaluation', 'materials', 'background',)}),
             (None,
              {'fields': ('fulldesc',)}),
             (None,
@@ -323,13 +331,7 @@ class ActivityAdmin(TranslatableAdmin):
 
 
 class CollectionAdminForm(TranslatableModelForm):
-
-    def clean(self):
-        cleaned_data = super().clean()
-        slug = cleaned_data.get('slug')
-        if not re.match('^[a-z]+$', slug):
-            raise forms.ValidationError('The slug must contain only lowercase characters')
-        return cleaned_data
+    pass
 
 
 class CollectionAdmin(TranslatableAdmin):

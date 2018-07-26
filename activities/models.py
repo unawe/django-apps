@@ -13,7 +13,7 @@ from sorl.thumbnail import ImageField
 from django_ext.models import PublishingModel, PublishingManager
 from django_ext.models.spaceawe import SpaceaweModel
 from . import utils
-from institutions.models import Institution, Person
+from institutions.models import Institution, Person, Location
 
 from search.mixins import SearchModel
 
@@ -27,7 +27,6 @@ def get_translated_file_path_step(instance, filename):
 
 
 ACTIVITY_SECTIONS = (
-    ('description', 'Brief Description'),
     ('goals', 'Goals'),
     ('objectives', 'Learning Objectives'),
     ('evaluation', 'Evaluation'),
@@ -50,14 +49,27 @@ ACTIVITY_METADATA = (
         {'display': 'group', }),
     ('supervised', 'Supervised',
         {'display': 'supervised', }),
-    ('cost', 'Cost',
+    ('cost', 'Cost per student',
         {'display': 'cost', }),
     ('location', 'Location',
         {'display': 'location', }),
     ('skills', 'Core skills',
         {'multiple': True, }),
-    ('learning', 'Type of learning activity',
-        {'display': 'learning', }),
+    ('learning', 'Type(s) of learning activity',
+        {'multiple': True}),
+    ('content_area_focus', 'Content Area focus',
+     {'display': 'content_area_focus',
+      'multiple': True}),
+    ('astronomical_scientific_category', 'Astronomical Scientific Categories',
+     {'display': 'content_area_focus',
+      'multiple': True}),
+    ('earth_science_keyword', 'Earth Science keywords',
+     {'display': 'content_area_focus',
+      'multiple': True}),
+    ('space_science_keyword', 'Space Science keywords',
+     {'display': 'content_area_focus',
+      'multiple': True}),
+
 )
 
 METADATA_OPTION_CHOICES = [(x[0], x[1]) for x in ACTIVITY_METADATA]
@@ -95,21 +107,36 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
     code = models.CharField(unique=True, max_length=4, help_text='The 4 digit code that identifies the Activity, in the format "YY##": year, folowed by sequential number.')
     doi = models.CharField(blank=True, max_length=50, verbose_name='DOI', help_text='Digital Object Identifier, in the format XXXX/YYYY. See http://www.doi.org/')
 
-    age = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'age'}, related_name='age+', )
-    level = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'level'}, related_name='level+', help_text='Specify at least one of "Age" and "Level". ', )
-    time = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'time'}, related_name='+', blank=False, null=False, )
-    group = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'group'}, related_name='+', blank=True, null=True, )
-    supervised = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'supervised'}, related_name='+', blank=True, null=True, )
-    cost = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'cost'}, related_name='+', blank=True, null=True, )
-    location = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'location'}, related_name='+', blank=True, null=True, )
+    age = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'age'}, related_name='age+', verbose_name='Age range')
+    level = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'level'}, related_name='level+', help_text='Specify at least one of "Age" and "Level". ', verbose_name='Education level')
+    time = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'time'}, related_name='+')
+    group = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'group'}, related_name='+', verbose_name='Group or individual activity')
+    supervised = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'supervised'}, related_name='+', verbose_name='Supervised for safety')
+    cost = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'cost'}, related_name='+', verbose_name='Cost per student')
+    location = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'location'}, related_name='+')
     skills = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'skills'}, related_name='skills+', verbose_name='core skills', )
-    learning = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'learning'}, related_name='+', blank=False, null=False, verbose_name='type of learning activity', help_text='Enquiry-based learning model', )
+    learning = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'learning'}, related_name='learning+', verbose_name='type of learning activity', help_text='Enquiry-based learning model')
 
     creation_date = models.DateTimeField(auto_now_add=True, null=True)
     modification_date = models.DateTimeField(auto_now=True, null=True)
 
     sourcelink_name = models.CharField(max_length=255, blank=True, verbose_name='Source Name')
     sourcelink_url = models.URLField(max_length=255, blank=True, verbose_name='Source URL')
+
+    # version 9
+    affiliation = models.CharField(blank=False, max_length=255, verbose_name='Affiliation or organisation')
+    country = models.ForeignKey(Location, blank=False, verbose_name='Country(s)')
+    email = models.CharField(max_length=64, blank=False, verbose_name='Email address of corresponding author')
+    suitable_group_size = models.IntegerField(verbose_name='Suitable group size')
+    max_number_at_once = models.IntegerField(verbose_name='Maximum number of people at once')
+    original_author = models.ForeignKey(Person, blank=True, null=True, verbose_name='Original Author of the activity (if not the authors listed above')
+    language = models.CharField(max_length=64, blank=False, null=False)
+    content_area_focus = models.ManyToManyField(MetadataOption, related_name='+', limit_choices_to={'group': 'content_area_focus'}, verbose_name='Content Area focus')
+
+    astronomical_scientific_category = models.ManyToManyField(MetadataOption, related_name='+', limit_choices_to={'group': 'astronomical_categories'}, verbose_name='Astronomical Scientific Categories', blank=True)
+    earth_science_keyword = models.ManyToManyField(MetadataOption, related_name='+', limit_choices_to={'group': 'earth_science'}, verbose_name='Earth Science keywords', blank=True)
+    space_science_keyword = models.ManyToManyField(MetadataOption, related_name='+', limit_choices_to={'group': 'space_science'}, verbose_name='Space Science keywords', blank=True)
+    other_keyword = models.ManyToManyField(MetadataOption, related_name='+', limit_choices_to={'group': 'other'}, verbose_name='Other', blank=True)
 
     objects = ActivityManager()
 
@@ -159,9 +186,7 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
         if prefix:
             prefix += '__'
         qs = qs.prefetch_related('%stranslations' % prefix)
-        #qs = qs.prefetch_related('{}metadataoption'.format(prefix))
-
-
+        # qs = qs.prefetch_related('{}metadataoption'.format(prefix))
         # qs = qs.prefetch_related('%scategories' % prefix)
         # qs = qs.prefetch_related('%scategories__translations' % prefix)
         # qs = qs.prefetch_related('%simages' % prefix)
@@ -224,25 +249,30 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
 class ActivityTranslation(TranslatedFieldsModel):
     master = models.ForeignKey(Activity, related_name='translations', null=True)
     slug = AutoSlugField(max_length=200, populate_from='title', always_update=True, unique=False)
-    title = models.CharField(max_length=255, db_index=True, help_text='Title is shown in browser window. Use a good informative title, since search engines normally display the title on their result pages.')
-    teaser = models.TextField(blank=False, max_length=140, help_text='One line, 140 characters maximum')
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Activity title', help_text='Title is shown in browser window. Use a good informative title, since search engines normally display the title on their result pages.')
+    teaser = models.TextField(blank=False, max_length=140, help_text='250 words', verbose_name='Abstract')
     theme = models.CharField(blank=False, max_length=40, help_text='Use top level AVM metadata')
     keywords = models.TextField(blank=False, help_text='List of keywords, separated by commas')
 
     acknowledgement = models.CharField(blank=True, max_length=255)
 
-    description = models.TextField(blank=False, verbose_name='brief description', help_text='Maximum 2 sentences! Maybe what and how?')
-    goals = models.TextField(blank=False, )
-    objectives = models.TextField(blank=False, verbose_name='Learning Objectives', )
-    evaluation = models.TextField(blank=True, help_text='If the teacher/educator wants to evaluate the impact of the activity, how can she/he do it?')
-    materials = models.TextField(blank=True, help_text='Please indicate costs and/or suppliers if possible')
-    background = models.TextField(blank=False, verbose_name='Background Information', )
-    fulldesc = models.TextField(blank=False, verbose_name='Full Activity Description')
+    description = models.TextField(blank=True, verbose_name='brief description', help_text='Maximum 2 sentences! Maybe what and how?')
+    goals = models.TextField()
+    objectives = models.TextField(verbose_name='Learning Objectives', )
+    evaluation = models.TextField(help_text='If the teacher/educator wants to evaluate the impact of the activity, how can she/he do it?')
+    materials = models.TextField(blank=True, verbose_name='List of material', help_text='Please indicate costs and/or suppliers if possible')
+    background = models.TextField(verbose_name='Background Information', )
+    fulldesc = models.TextField(verbose_name='Full description of the activity')
     curriculum = models.TextField(blank=True, verbose_name='Connection to school curriculum', help_text='Please indicate which country')
     additional_information = models.TextField(blank=True, help_text='Notes, Tips, Resources, Follow-up, Questions, Safety Requirements, Variations')
-    conclusion = models.TextField(blank=False, )
+    conclusion = models.TextField()
 
     alert_message = models.TextField(blank=True, help_text='Alert message, do display at the top of the activity page')
+
+    # version 9
+    short_desc_material = models.TextField(blank=True, verbose_name='Short description of Suplementary material')
+    further_reading = models.TextField(blank=True, verbose_name='Further reading', default='')
+    reference = models.TextField(blank=True, verbose_name='References')
 
     # Space Awareness fields
     big_idea = models.CharField(max_length=200, blank=True, verbose_name='Big Idea of Science')
@@ -251,6 +281,7 @@ class ActivityTranslation(TranslatedFieldsModel):
     class Meta:
         unique_together = (
             ('language_code', 'master'),
+            ('language_code', 'slug')
         )
 
 
@@ -364,7 +395,7 @@ class Collection(TranslatableModel, PublishingModel):
 class CollectionTranslation(TranslatedFieldsModel):
     master = models.ForeignKey(Collection, related_name='translations', null=True)
     title = models.CharField(blank=False, max_length=255)
-    slug = models.SlugField(unique=True, db_index=True, help_text='Slug identifies the Collection; it is used as part of the URL. Use only lowercase characters.')
+    slug = models.SlugField(unique=True, db_index=True, help_text='Slug identifies the Collection; it is used as part of the URL.')
     description = models.TextField(blank=True, verbose_name='brief description', )
 
 
@@ -390,10 +421,6 @@ class RepositoryEntry(models.Model):
     class Meta:
         ordering = ['repo']
         verbose_name_plural = 'repository entries'
-
-
-
-
 
 
 class JourneyCategoryQuerySet(TranslatableQuerySet):
