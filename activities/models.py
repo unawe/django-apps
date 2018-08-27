@@ -1,6 +1,6 @@
 import uuid
 import os
-
+from urllib.parse import urlparse
 from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.db import models
@@ -172,6 +172,11 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
         if images:
             result = images[0].file
         return result
+
+    @property
+    def main_video_link(self):
+        video_links = self.link_set.filter(main=True, type=Link.TYPE_VIDEO)
+        return video_links.last() if video_links else None
 
     def is_translation_fallback(self):
         return not self.has_translation(self.language_code)
@@ -473,6 +478,54 @@ class JourneyChapterTranslation(TranslatedFieldsModel):
     master = models.ForeignKey(JourneyChapter, related_name='translations', null=True)
     title = models.CharField(blank=False, max_length=255, verbose_name='Chapter title')
     description = models.TextField(blank=True, verbose_name='Chapter introduction')
+
+    class Meta:
+        unique_together = (
+            ('language_code', 'master'),
+        )
+
+
+class LinkQuerySet(TranslatableQuerySet):
+    pass
+
+
+class LinkManager(LinkQuerySet):
+    queryset_class = LinkQuerySet
+
+
+class Link(TranslatableModel):
+    TYPE_OTHER = 0
+    TYPE_VIDEO = 1
+
+    TYPES = (
+        (TYPE_OTHER, 'Other'),
+        (TYPE_VIDEO, 'Video')
+    )
+
+    activity = models.ForeignKey(Activity)
+    type = models.IntegerField(choices=TYPES, default=TYPE_OTHER)
+    main = models.BooleanField(default=False)
+    show = models.BooleanField(default=True)
+    position = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title if self.title else self.url
+
+    @property
+    def youtube_embed_url(self):
+        if self.type != self.TYPE_VIDEO:
+            return None
+        url = urlparse(self.url)
+        if url.netloc == 'www.youtube.com':
+            return "{}://{}/embed/{}?controls=1".format(url.scheme, url.netloc, url.query[2:])
+
+
+
+class LinkTranslation(TranslatedFieldsModel):
+    master = models.ForeignKey(Link, related_name='translations', null=True)
+    title = models.CharField(max_length=64, blank=True)
+    url = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True)
 
     class Meta:
         unique_together = (

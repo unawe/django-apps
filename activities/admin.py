@@ -14,7 +14,7 @@ from parler.forms import TranslatableModelForm
 from django_mistune import markdown
 
 from activities.utils import bleach_clean
-from .models import Activity, Attachment, LanguageAttachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository, JourneyCategory, JourneyChapter, Location
+from .models import Activity, Attachment, LanguageAttachment, AuthorInstitution, MetadataOption, Collection, RepositoryEntry, Repository, JourneyCategory, JourneyChapter, Location, Link
 
 
 class MetadataOptionAdmin(admin.ModelAdmin):
@@ -66,6 +66,11 @@ class ActivityLanguageAttachmentInline(TranslatableTabularInline):
 
 class RepositoryEntryInline(admin.TabularInline):
     model = RepositoryEntry
+
+
+class LinkInline(TranslatableTabularInline):
+    model = Link
+    fields = ('title', 'url', 'type', 'description', 'main', 'show', 'position', )
 
 
 class ActivityAdminForm(TranslatableModelForm):
@@ -264,7 +269,7 @@ class ActivityAdmin(TranslatableAdmin):
     actions = [activities_csv]
 
     if settings.SHORT_NAME == 'astroedu':
-        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, MembershipInline, ]
+        inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, MembershipInline, LinkInline]
     else:
         inlines = [AuthorInstitutionInline, ActivityAttachmentInline, ActivityLanguageAttachmentInline, RepositoryEntryInline, ]
 
