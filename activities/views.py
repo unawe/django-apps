@@ -9,7 +9,7 @@ from django.contrib.syndication.views import Feed
 from django.utils.translation import get_language
 from django_ext import compiler
 
-from .models import Activity, Collection, ACTIVITY_SECTIONS, ACTIVITY_METADATA
+from .models import Activity, Collection, ACTIVITY_SECTIONS, ACTIVITY_METADATA, JourneyCategory, JourneyChapter
 
 
 def _activity_queryset(request, only_translations=True):
@@ -50,7 +50,7 @@ class ActivityListView(ViewUrlMixin, ListView):
     def get_view_url(self):
         if 'level' in self.kwargs:
             return reverse('activities:list_combine', kwargs={'category': self.kwargs.get('category', self.all_categories),
-                                                              'level' : self.kwargs['level']})
+                                                              'level': self.kwargs['level']})
         else:
             return reverse('activities:list_by_category', kwargs={'category': self.kwargs.get('category', self.all_categories)})
 
@@ -163,3 +163,23 @@ class CollectionDetailView(TranslatableSlugMixin, DetailView):
     # template_name = 'activities/collection_detail.html'
     # slug_field = 'slug'
     slug_url_kwarg = 'collection_slug'
+
+
+class JourneyListView(ViewUrlMixin, ListView):
+    model = JourneyCategory
+    view_url_name = 'activities:journey'
+    #page_template_name = 'activities/journey.html'
+    #all_categories = 'all'
+
+    def get_context_data(self, **kwargs):
+        last_journey = JourneyCategory.objects.available(user=self.request.user).last()
+        context = super().get_context_data(**kwargs)
+        context['sections_meta'] = ACTIVITY_METADATA
+        #context['page_template'] = self.page_template_name
+        context['all_categories'] = 'all'
+        context['category'] = self.kwargs.get('category', 'all')
+        context['activities'] = _activity_queryset(self.request)
+        context['journey'] = last_journey
+        if last_journey:
+            context['chapters'] = JourneyChapter.objects.filter(journey_id=last_journey.id)
+        return context
