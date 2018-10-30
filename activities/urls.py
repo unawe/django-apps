@@ -27,4 +27,6 @@ if settings.SHORT_NAME == 'spaceawe':
 if settings.SHORT_NAME == 'astroedu':
     urlpatterns += [
         url(r'^(?P<slug>.+)?/$', views.detail_by_slug),  # old style astroEDU URL
+        # needed ActivityListView.get_view_url, but really is spaceawe specific:
+        url(r'^category/(?P<category>\w+)/$', views.ActivityListView.as_view(), name='list_by_category'),
     ]
