@@ -110,10 +110,10 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
     age = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'age'}, related_name='age+', verbose_name='Age range')
     level = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'level'}, related_name='level+', help_text='Specify at least one of "Age" and "Level". ', verbose_name='Education level')
     time = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'time'}, related_name='+')
-    group = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'group'}, related_name='+', verbose_name='Group or individual activity')
+    group = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'group'}, related_name='+', verbose_name='Group or individual activity', null=True)
     supervised = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'supervised'}, related_name='+', verbose_name='Supervised for safety')
-    cost = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'cost'}, related_name='+', verbose_name='Cost per student')
-    location = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'location'}, related_name='+')
+    cost = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'cost'}, null=True, verbose_name='Cost per student')
+    location = models.ForeignKey(MetadataOption, limit_choices_to={'group': 'location'}, related_name='+', null=True)
     skills = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'skills'}, related_name='skills+', verbose_name='core skills', )
     learning = models.ManyToManyField(MetadataOption, limit_choices_to={'group': 'learning'}, related_name='learning+', verbose_name='type of learning activity', help_text='Enquiry-based learning model')
 
@@ -125,8 +125,8 @@ class Activity(TranslatableModel, PublishingModel, SpaceaweModel, SearchModel):
 
     # version 9
     affiliation = models.CharField(blank=False, max_length=255, verbose_name='Affiliation or organisation')
-    country = models.ForeignKey(Location, blank=False, verbose_name='Country(s)')
-    email = models.CharField(max_length=64, blank=False, verbose_name='Email address of corresponding author')
+    country = models.ForeignKey(Location, verbose_name='Country(s)', null=True)
+    email = models.CharField(max_length=64, verbose_name='Email address of corresponding author')
     suitable_group_size = models.IntegerField(verbose_name='Suitable group size')
     max_number_at_once = models.IntegerField(verbose_name='Maximum number of people at once')
     original_author = models.ForeignKey(Person, blank=True, null=True, verbose_name='Original Author of the activity (if not the authors listed above')
